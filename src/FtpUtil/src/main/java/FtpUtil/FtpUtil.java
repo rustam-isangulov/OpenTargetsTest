@@ -14,6 +14,7 @@ public class FtpUtil {
     private static long countDownloadedFiles = 0;
 
 
+    // TODO Add proper handling of command line parameters
     public static void main(String... args) {
         System.out.println("FtpUtil is starting...");
 
@@ -33,8 +34,11 @@ public class FtpUtil {
         System.out.println("FtpUtil has finished.");
     }
 
+    // TODO move dealing with raw String to main, use URI / Path for parameters here
     public static void ConnectAndDownload
             (String strServer, String strRemoteBase, String strLocalBase, String strDir ) {
+
+        // TODO Clean test inputs organize test classes
         String server = strServer; //= "ftp.ebi.ac.uk";
 
         Path remoteDirBase = Path.of(strRemoteBase); //= Path.of("/pub/databases/opentargets/platform/21.11/output/etl/json/");
@@ -90,6 +94,7 @@ public class FtpUtil {
 
             // report elapsed time
             long elapsedTime = System.nanoTime() - startTime;
+
             System.out.println();
             System.out.format("elapsed time: %.0f (ms)",elapsedTime * 1e-6);
             System.out.println();
