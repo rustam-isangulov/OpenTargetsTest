@@ -28,12 +28,12 @@ public class FtpUtil {
         System.out.println("Local base: [" + args[2] + "]");
         System.out.println("Dir: [" + args[3] + "]");
 
-        ConnectionTest(args[0], args[1], args[2], args[3]);
+        ConnectAndDownload(args[0], args[1], args[2], args[3]);
 
         System.out.println("FtpUtil has finished.");
     }
 
-    public static void ConnectionTest
+    public static void ConnectAndDownload
             (String strServer, String strRemoteBase, String strLocalBase, String strDir ) {
         String server = strServer; //= "ftp.ebi.ac.uk";
 
