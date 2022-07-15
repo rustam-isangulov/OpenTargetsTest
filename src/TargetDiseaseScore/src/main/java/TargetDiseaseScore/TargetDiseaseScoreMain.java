@@ -1,9 +1,11 @@
 package TargetDiseaseScore;
 
+import TargetDiseaseScore.cli.CommandLineParameters;
 import TargetDiseaseScore.dto.*;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.apache.commons.cli.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -24,6 +26,23 @@ public class TargetDiseaseScoreMain {
         System.out.println("TargetDiseaseScoreMain is starting...");
         System.out.println();
 
+        //
+        // understand user defined options
+        //
+
+        CommandLineParameters.parse(args);
+
+        System.out.println("Proceeding with following paramaters");
+        System.out.println("\tEvidence path: [" + CommandLineParameters.getPathToEvidence() + "]");
+        System.out.println("\tTargets path: [" + CommandLineParameters.getPathToTargets() + "]");
+        System.out.println("\tDiseases path: [" + CommandLineParameters.getPathToDiseases() + "]");
+        System.out.println("\tOutput path: [" + CommandLineParameters.getPathToOutput() + "]");
+        System.out.println("\tMin number of shared connections: [" + CommandLineParameters.getMinSharedNumber() + "]");
+
+        //
+        // run the job
+        //
+
         // test part 1
         List<TDComposite> overallList = ProcessTDEvidence();
         Map<String, Target> targetMap = GetAllTargets();
@@ -32,7 +51,8 @@ public class TargetDiseaseScoreMain {
         jointQuery(overallList, targetMap, diseaseMap);
 
         // test part 2
-        List<TargetOverlapPair> targetOverlapPairList = getTargetPairsWithSharedDiseases(overallList, 1);
+        List<TargetOverlapPair> targetOverlapPairList
+                = getTargetPairsWithSharedDiseases(overallList, CommandLineParameters.getMinSharedNumber());
 
         System.out.println();
         System.out.println("TargetDiseaseScoreMain has completed.");
@@ -54,7 +74,7 @@ public class TargetDiseaseScoreMain {
 
         // generate a list of [Target] - [Disease Set] pairs ordered by number of diseases in the set
         List<TargetDiseaseSet> targetDiseaseSetList = mapTarget.entrySet().stream()
-                .filter(e -> e.getValue().size() > minOfSharedDiseases)
+                .filter(e -> e.getValue().size() >= minOfSharedDiseases)
                 .sorted((o1, o2) -> o1.getValue().size() - o2.getValue().size() )
                 .map(e -> new TargetDiseaseSet(e.getKey(), e.getValue().stream()
                         .map(TDComposite::getDiseaseId)
@@ -86,7 +106,7 @@ public class TargetDiseaseScoreMain {
                 .map(b -> b.getTargetsToCheck().stream()
                         .filter(t -> b.getDiseases().stream()
                                 .filter(d -> t.getDiseases().contains(d))
-                                .count() > minOfSharedDiseases)
+                                .count() >= minOfSharedDiseases)
                         .map(t -> {
                             var intersection = new HashSet<String>(t.getDiseases());
                             intersection.retainAll(b.getDiseases());
