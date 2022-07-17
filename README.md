@@ -52,6 +52,7 @@ java -jar bin/overallscore.jar -e "./data/evidence/sourceId=eva/" -t "./data/tar
 ```
 
 <details><summary>expected output</summary>
+
 ```shell
 Proceeding with the following parameters
 	Evidence path: [./data/evidence/sourceId=eva]
