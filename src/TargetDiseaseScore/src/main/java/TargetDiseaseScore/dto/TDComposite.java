@@ -41,17 +41,17 @@ public class TDComposite {
         this.medianScore = medianScore;
     }
 
-    @Override
-    public String toString() {
-        return String.format("targetId = %s, diseaseId = %s, medianScore = %.2f, topScores=%s"
-                , targetId, diseaseId, medianScore, topScores.toString());
-    }
-
     public List<Double> getTopScores() {
         return topScores;
     }
 
     public void setTopScores(List<Double> topScores) {
         this.topScores = topScores;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("targetId = %s, diseaseId = %s, medianScore = %.2f, topScores=%s"
+                , targetId, diseaseId, medianScore, topScores.toString());
     }
 }

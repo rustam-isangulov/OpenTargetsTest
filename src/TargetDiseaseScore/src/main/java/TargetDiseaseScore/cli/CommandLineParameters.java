@@ -7,37 +7,39 @@ import java.nio.file.Path;
 
 public class CommandLineParameters {
 
-    private static int minNumberOfSharedDiseases = 2;
-    private static Path pathToTargets;
-    private static Path pathToDiseases;
-    private static Path pathToEvidence;
-    private static Path pathToOutput;
+    private int minNumberOfSharedDiseases = 2;
+    private Path pathToTargets;
+    private Path pathToDiseases;
+    private Path pathToEvidence;
+    private Path pathToOutput;
 
-    public static int getMinSharedNumber() {
+    private Options options;
+
+    public int getMinSharedNumber() {
         return minNumberOfSharedDiseases;
     }
 
-    public static Path getPathToTargets() {
+    public Path getPathToTargets() {
         return pathToTargets;
     }
 
-    public static Path getPathToDiseases() {
+    public Path getPathToDiseases() {
         return pathToDiseases;
     }
 
-    public static Path getPathToEvidence() {
+    public Path getPathToEvidence() {
         return pathToEvidence;
     }
 
-    public static Path getPathToOutput() {
+    public Path getPathToOutput() {
         return pathToOutput;
     }
 
-    public static void parse(String... args) {
+    public void parse(String... args) throws ParseException {
 
         // define options
 
-        Options options = new Options();
+        options = new Options();
 
         Option targetsDir = Option.builder()
                 .option("t")
@@ -95,7 +97,7 @@ public class CommandLineParameters {
 
         CommandLineParser parser = new DefaultParser();
 
-        try {
+//        try {
             CommandLine line = parser.parse(options, args);
 
             // parse shared number of diseases option
@@ -138,20 +140,9 @@ public class CommandLineParameters {
                 throw new ParseException("Bad value for "
                         + "<" + outputDir.getArgName() + ">");
             }
-        } catch (ParseException ex) {
-            System.out.println("Parsing of command line arguments failed: "
-                    + ex.getMessage());
+   }
 
-            System.out.println();
-            // just a bit annoying...
-            // leave it for now...
-            printHelp(options);
-
-            System.exit(1);
-        }
-    }
-
-    private static void printHelp(Options options) {
+    public void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
         String footer = "\nExample:\n java -jar TargetDiseaseScore -e \"./evidence/sourceId=eva/\" -t \"./targets/\" -d \"./diseases/\" -o \"./output/\" -sn 2";
         formatter.printHelp

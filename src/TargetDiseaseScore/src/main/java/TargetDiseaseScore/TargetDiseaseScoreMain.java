@@ -1,12 +1,10 @@
 package TargetDiseaseScore;
 
 import TargetDiseaseScore.cli.CommandLineParameters;
+import TargetDiseaseScore.cli.ProgressReporter;
 import TargetDiseaseScore.dto.*;
 import TargetDiseaseScore.io.JsonIO;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.ParseException;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -14,119 +12,136 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static TargetDiseaseScore.Calculator.median;
-import static TargetDiseaseScore.io.JsonIO.exportToJson;
+import static TargetDiseaseScore.cli.ProgressReporter.Action.*;
 
 public class TargetDiseaseScoreMain {
+    private final JsonIO jsonIO = new JsonIO();
+
+    private final PathMatcher fileMatcher =  FileSystems.getDefault()
+            .getPathMatcher("glob:*.json");
+
     public static void main(String... args) {
         //
         // understand user defined options
         //
 
-        CommandLineParameters.parse(args);
+        var clp = new CommandLineParameters();
+
+        try {
+            clp.parse(args);
+        } catch (ParseException ex) {
+            System.out.println("Parsing of command line arguments failed: "
+                    + ex.getMessage());
+
+            System.out.println();
+
+            // just a bit annoying...
+            // leave it for now...
+            clp.printHelp();
+
+            System.exit(1);
+        }
 
         System.out.println();
         System.out.println("Proceeding with following parameters");
-        System.out.println("\tEvidence path: [" + CommandLineParameters.getPathToEvidence() + "]");
-        System.out.println("\tTargets path: [" + CommandLineParameters.getPathToTargets() + "]");
-        System.out.println("\tDiseases path: [" + CommandLineParameters.getPathToDiseases() + "]");
-        System.out.println("\tOutput path: [" + CommandLineParameters.getPathToOutput() + "]");
-        System.out.println("\tMin number of shared connections: [" + CommandLineParameters.getMinSharedNumber() + "]");
+        System.out.println("\tEvidence path: [" + clp.getPathToEvidence() + "]");
+        System.out.println("\tTargets path: [" + clp.getPathToTargets() + "]");
+        System.out.println("\tDiseases path: [" + clp.getPathToDiseases() + "]");
+        System.out.println("\tOutput path: [" + clp.getPathToOutput() + "]");
+        System.out.println("\tMin number of shared connections: [" + clp.getMinSharedNumber() + "]");
+
+        // planning to read only json files for now...
+        PathMatcher jsonMatcher = FileSystems.getDefault()
+                .getPathMatcher("glob:*.json");
 
         //
         // run the job
         //
 
+        TargetDiseaseScoreMain processor = new TargetDiseaseScoreMain();
+
         //
         // test part 1
         //
 
-        System.out.println();
-        System.out.println("Start processing evidence data...");
-        long startTime = System.nanoTime();
+        ProgressReporter.of(EVIDENCE_FILE).start();
+
+        // Process target-disease evidence files
+        Map<String, List<TDEvidence>> evidenceMap =
+                processor.processTDEvidence(clp.getPathToEvidence());
+
+        ProgressReporter.of(EVIDENCE_FILE).finish(evidenceMap.size());
+
+
+        ProgressReporter.of(EVIDENCE_MAP).start();
 
         // Generate overall association scores
-        List<TDComposite> overallList = ProcessTDEvidence
-                (CommandLineParameters.getPathToEvidence());
+        List<TDComposite> overallList =
+                processor.generateOverallScores(evidenceMap);
 
-        long elapsedTime = System.nanoTime() - startTime;
-        System.out.println();
-        System.out.format("Total elapsed time for the evidence processing: %.0f (ms)", elapsedTime * 1e-6);
-        System.out.println();
-        System.out.println("Number of target-disease overall scores: " + overallList.size());
+        ProgressReporter.of(EVIDENCE_MAP).finish(overallList.size());
 
-        System.out.println();
-        System.out.println("Start processing target data...");
-        startTime = System.nanoTime();
+
+        ProgressReporter.of(TARGETS).start();
 
         // Process targets dataset
-        Map<String, Target> targetMap = ProcessTargets
-                (CommandLineParameters.getPathToTargets());
+        Map<String, Target> targetMap =
+                processor.processTargets(clp.getPathToTargets());
 
-        elapsedTime = System.nanoTime() - startTime;
-        System.out.println();
-        System.out.format("Total elapsed time for the target processing: %.0f (ms)", elapsedTime * 1e-6);
-        System.out.println();
-        System.out.println("Number of targets: " + targetMap.size());
+        ProgressReporter.of(TARGETS).finish(targetMap.size());
 
-        System.out.println();
-        System.out.println("Start processing disease data...");
-        startTime = System.nanoTime();
+
+        ProgressReporter.of(DISEASES).start();
 
         // Process diseases dataset
-        Map<String, Disease> diseaseMap = ProcessDiseases
-                (CommandLineParameters.getPathToDiseases());
+        Map<String, Disease> diseaseMap =
+                processor.processDiseases(clp.getPathToDiseases());
 
-        elapsedTime = System.nanoTime() - startTime;
-        System.out.println();
-        System.out.format("Total elapsed time for the diseases processing: %.0f (ms)", elapsedTime * 1e-6);
-        System.out.println();
-        System.out.println("Number of diseases: " + diseaseMap.size());
+        ProgressReporter.of(DISEASES).finish(diseaseMap.size());
 
 
-        System.out.println();
-        System.out.println("Create and export joint Association/Target/Disease dataset...");
+        ProgressReporter.of(JOINT_DATASET).start();
 
-        // make a joint query with three tables
-        // and save result in a *.json file
-        exportToJson(jointQuery(overallList, targetMap, diseaseMap)
-                , CommandLineParameters.getPathToOutput()
-                , "joint_dataset.json");
+        List<TDAssociation> jointData =
+                processor.jointQuery(overallList, targetMap, diseaseMap);
 
-        System.out.println("Json export is done");
+        processor.exportJointDataSet(jointData, clp.getPathToOutput(), "joint_dataset.json");
+
+        ProgressReporter.of(JOINT_DATASET).finish(1);
 
         //
         // test part 2
         //
 
-        System.out.println();
-        System.out.println("Start searching for targets with shared disease connections...");
-        startTime = System.nanoTime();
+        ProgressReporter.of(SEARCHING).start();
 
         // search for target pairs that share a min number of disease connections
         List<TargetOverlapPair> targetOverlapPairList
-                = getTargetPairsWithSharedDiseases(overallList, CommandLineParameters.getMinSharedNumber());
+                =  processor.getTargetPairsWithSharedDiseases(overallList, clp.getMinSharedNumber());
 
-        elapsedTime = System.nanoTime() - startTime;
-
-        // report time spent to search
-        System.out.println();
-        System.out.format("Time to run search for target-target overlaps: %.2f (ms)", elapsedTime * 1e-6);
-        System.out.println();
-        System.out.printf("Number of target-target pairs with at least %d shared connections: %d"
-                , CommandLineParameters.getMinSharedNumber()
-                , targetOverlapPairList.size());
-        System.out.println();
+        ProgressReporter.of(SEARCHING).finish(targetOverlapPairList.size());
 
         System.out.println();
     }
 
-    static List<TargetOverlapPair> getTargetPairsWithSharedDiseases
+    void exportJointDataSet(List<TDAssociation> inData, Path outputDir, String filePattern) {
+
+        // for now assume single file export...
+        Path file = outputDir.resolve(filePattern);
+
+        try (var writer = Files.newBufferedWriter(file)) {
+            jsonIO.ObjToJson(inData, writer);
+        } catch(IOException ex) {
+            throw new RuntimeException("Writing json output: something bad happened with IO...", ex);
+        }
+    }
+
+    List<TargetOverlapPair> getTargetPairsWithSharedDiseases
             (List<TDComposite> inTDCompositeAssociation,  int minOfSharedDiseases) {
 
         //
@@ -134,23 +149,28 @@ public class TargetDiseaseScoreMain {
         //
 
         // group associations by TargetId
-        var mapTarget = inTDCompositeAssociation.stream()
+        var mapTarget = inTDCompositeAssociation
+                .parallelStream()
                 .collect(Collectors.groupingByConcurrent(TDComposite::getTargetId));
 
         // generate a list of [Target] - [Disease Set] pairs ordered by number of diseases in the set
-        List<TargetDiseaseSet> targetDiseaseSetList = mapTarget.entrySet().stream()
+        List<TargetDiseaseSet> targetDiseaseSetList = mapTarget.entrySet()
+                .parallelStream()
                 // do not need to consider targets with fewer connections than min shared number
                 .filter(e -> e.getValue().size() >= minOfSharedDiseases)
                 .sorted((o1, o2) -> o1.getValue().size() - o2.getValue().size() )
-                .map(e -> new TargetDiseaseSet(e.getKey(), e.getValue().stream()
+                .map(e -> new TargetDiseaseSet(e.getKey()
+                        , e.getValue()
+                        .stream()
                         .map(TDComposite::getDiseaseId)
                         .collect(Collectors.toUnmodifiableSet())))
                 .collect(Collectors.toList());
 
 
         // generate a list of Search Cells for each Target
-        // list TargetsToCheck includes only TargetDiseaseSets that come afterwards the current target
-        // in the ordered targetDiseaseSetList to avoid duplication of target-target pairs
+        // TargetsToCheck includes only TargetDiseaseSets that
+        // come afterwards the current target in the ordered targetDiseaseSetList
+        // to avoid duplication of target-target pairs
         List<TargetDiseaseSearchCell> searchCellList = IntStream.rangeClosed(0, targetDiseaseSetList.size() - 2)
                 .mapToObj(i -> new TargetDiseaseSearchCell(
                         targetDiseaseSetList.get(i).getTargetId()
@@ -162,16 +182,20 @@ public class TargetDiseaseScoreMain {
         // search
         //
 
-        // search for overlap in each search cell
-        List<TargetOverlapPair> targetOverlapPairList = searchCellList.parallelStream()
-                .map(b -> b.getTargetsToCheck().stream()
-                        .filter(t -> b.getDiseases().stream()
-                                .filter(d -> t.getDiseases().contains(d))
+        // search for overlaps within each search cell
+        List<TargetOverlapPair> targetOverlapPairList = searchCellList
+                .parallelStream()
+                .map(cell -> cell.getTargetsToCheck().stream()
+                        .filter(nextSet -> cell.getDiseases().stream()
+                                .filter(cellDisease -> nextSet.getDiseases().contains(cellDisease))
                                 .count() >= minOfSharedDiseases)
-                        .map(t -> {
-                            var intersection = new HashSet<String>(t.getDiseases());
-                            intersection.retainAll(b.getDiseases());
-                            return new TargetOverlapPair(b.getTargetId(), t.getTargetId(), intersection);
+                        .map(overlappingSet -> {
+                            var intersection = new HashSet<String>(overlappingSet.getDiseases());
+                            intersection.retainAll(cell.getDiseases());
+                            return new TargetOverlapPair
+                                    (cell.getTargetId()
+                                            , overlappingSet.getTargetId()
+                                            , intersection);
                         })
                         .collect(Collectors.toList()))
                 .flatMap(List::stream)
@@ -180,13 +204,14 @@ public class TargetDiseaseScoreMain {
         return targetOverlapPairList;
     }
 
-    static List<TDAssociation> jointQuery
-            (List<TDComposite> overallList, Map<String
-            , Target> targetMap, Map<String, Disease> diseaseMap) {
+    List<TDAssociation> jointQuery
+            (List<TDComposite> overallList
+                    , Map<String, Target> targetMap
+                    , Map<String, Disease> diseaseMap) {
 
         // joint query for three tables
-        List<TDAssociation> listOfAssociations = overallList.stream()
-                //.limit(10000)
+        List<TDAssociation> listOfAssociations = overallList
+                .stream()
                 .map(c -> new TDAssociation(
                         c.getTargetId()
                         , c.getDiseaseId()
@@ -201,18 +226,20 @@ public class TargetDiseaseScoreMain {
         return listOfAssociations;
     }
 
-
-    static Map<String, Disease> ProcessDiseases(Path diseasesDir) {
-        // filter for json files
-        PathMatcher jsonMatcher = FileSystems.getDefault()
-                .getPathMatcher("glob:*.json");
+    Map<String, Disease> processDiseases(Path diseasesDir) {
 
         try(var s = Files.list(diseasesDir)
-                .filter(p -> jsonMatcher.matches(p.getFileName()))) {
+                .filter(p -> fileMatcher.matches(p.getFileName()))) {
 
             // collect diseases into a [DiseaseId] - [Disease] map
             Map<String, Disease> diseases = s
-                    .flatMap(f -> JsonIO.ParseFile(f, Disease.class).stream())
+                    .flatMap(f -> {
+                        try (var lines = Files.lines(f)) {
+                            return jsonIO.LinesToObj(lines, Disease.class).stream();
+                        } catch (IOException ex) {
+                            throw new RuntimeException("Parsing json strings: Something bad happened with IO...", ex);
+                        }
+                    })
                     .parallel()
                     .collect(Collectors.toConcurrentMap(Disease::getId, Function.identity()));
 
@@ -223,17 +250,20 @@ public class TargetDiseaseScoreMain {
         }
     }
 
-    static Map<String, Target> ProcessTargets(Path targetDir) {
-        // filter for json files
-        PathMatcher jsonMatcher = FileSystems.getDefault()
-                .getPathMatcher("glob:*.json");
+    Map<String, Target> processTargets(Path targetDir) {
 
         try(var s = Files.list(targetDir)
-                .filter(p -> jsonMatcher.matches(p.getFileName()))) {
+                .filter(p -> fileMatcher.matches(p.getFileName()))) {
 
             // Collect all targets into an [TargetId] - [Target] map
             Map<String, Target> targets = s
-                    .flatMap(f -> JsonIO.ParseFile(f, Target.class).stream())
+                    .flatMap(f -> {
+                        try (var lines = Files.lines(f)) {
+                            return jsonIO.LinesToObj(lines, Target.class).stream();
+                        } catch (IOException ex) {
+                            throw new RuntimeException("Parsing json strings: Something bad happened with IO...", ex);
+                        }
+                    })
                     .parallel()
                     .collect(Collectors.toConcurrentMap(Target::getId, Function.identity()));
 
@@ -244,59 +274,58 @@ public class TargetDiseaseScoreMain {
         }
     }
 
-    static List<TDComposite> ProcessTDEvidence(Path evidenceDir) {
-        // number of top scores
-        final int numberOfTopScores = 3;
-
-        // filter for json files
-        PathMatcher jsonMatcher = FileSystems.getDefault()
-                .getPathMatcher("glob:*.json");
+    Map<String, List<TDEvidence>> processTDEvidence(Path evidenceDir) {
 
         // load and process each *.json file in the evidenceDir
         try (var s = Files.list(evidenceDir)
-                .filter(p -> jsonMatcher.matches(p.getFileName()))) {
+                .filter(p -> fileMatcher.matches(p.getFileName()))) {
 
             // parse data file and individual evidence
             // and collect them into [Target:Disease] - [list of evidence] map
             var map = s
-                    .flatMap(f -> JsonIO.ParseFile(f, TDEvidence.class).stream())
+                    .flatMap(f -> {
+                        try (var lines = Files.lines(f)) {
+                            return jsonIO.LinesToObj(lines, TDEvidence.class).stream();
+                        } catch (IOException ex) {
+                            throw new RuntimeException("Parsing json strings: Something bad happened with IO...", ex);
+                        }
+                    })
                     .parallel()
                     .collect(Collectors.groupingByConcurrent
                             (e -> e.getTargetId() + e.getDiseaseId()));
 
-            // process the map into a list of overall associations
-            // that includes median of scores and top 3 scores
-            var composites =  map.values()
-                    .parallelStream()
-                    .map(e -> new TDComposite(
-                            e.get(0).getTargetId(),
-                            e.get(0).getDiseaseId(),
-                            median(e.stream()
-                                    .mapToDouble(TDEvidence::getScore)
-                                    .toArray()),
-                            e.stream()
-                                    .map(TDEvidence::getScore)
-                                    .sorted(Comparator.reverseOrder())
-                                    .limit(numberOfTopScores)
-                                    .collect(Collectors.toList())
-                    ))
-                    .collect(Collectors.toList());
-
-            return composites;
+            return map;
 
         } catch (IOException ex) {
-            throw new RuntimeException("Generating target-disease overall score : something bad happened with IO...", ex);
+            throw new RuntimeException("Parsing evidence files : something bad happened with IO...", ex);
         }
     }
+
+    List<TDComposite> generateOverallScores(Map<String, List<TDEvidence>> evidenceMap) {
+        // number of top scores
+        final int numberOfTopScores = 3;
+
+        // process the map into a list of overall associations
+        // that includes median of scores and top 3 scores
+        var composites =  evidenceMap.values()
+                .parallelStream()
+                .map(e -> new TDComposite(
+                        e.get(0).getTargetId(),
+                        e.get(0).getDiseaseId(),
+                        median(e.stream()
+                                .mapToDouble(TDEvidence::getScore)
+                                .toArray()),
+                        e.stream()
+                                .map(TDEvidence::getScore)
+                                .sorted(Comparator.reverseOrder())
+                                .limit(numberOfTopScores)
+                                .collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList());
+
+        return composites;
+    }
 }
-
-
-
-
-
-
-
-
 
 
 

@@ -5,35 +5,54 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class JsonIO {
-    public static <T> List<T> ParseFile(Path inFile, Class<T> type) {
+    private final ObjectMapper mapper;
 
-        final ObjectMapper mapper = new ObjectMapper();
+    public JsonIO() {
+        mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(SerializationFeature.CLOSE_CLOSEABLE, false);
+    }
 
-        try( var s = Files.lines(inFile)) {
+    public <T> List<T> LinesToObj(BufferedReader reader, Class<T> type) throws IOException {
 
-            var list = s.parallel()
-                    .map(l -> {
-                        try{
-                            return mapper.readValue(l, type);
-                        } catch (IOException ex) {
-                            throw new RuntimeException("JSON mapping failed...", ex);
-                        }
-                    })
-                    .collect(Collectors.toList());
+        return mapper
+                .readValues(mapper.createParser(reader), type)
+                .readAll();
 
-            return list;
+    }
 
-        } catch (IOException ex) {
-            throw new RuntimeException("Parsing evidence files: something bad happened with IO...", ex);
-        }
+    public <T> List<T> LinesToObj(Stream<String> stringStream, Class<T> type) {
+
+        return stringStream.parallel()
+                .map(l -> {
+                    try {
+                        return mapper.readValue(l, type);
+                    } catch (IOException ex) {
+                        throw new RuntimeException("JSON mapping failed...", ex);
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
+    public void ObjToJson(List<?> list, BufferedWriter writer) {
+        list.forEach(a -> {
+            try {
+                writer.write(mapper.writeValueAsString(a));
+                writer.newLine();
+            } catch (IOException ex) {
+                throw new RuntimeException("JSON write has failed...", ex);
+            }
+        });
     }
 
     public static void exportToJson(List<TDAssociation> list, Path outputDir, String filePattern)  {
@@ -58,4 +77,16 @@ public class JsonIO {
             throw new RuntimeException("Writing json output: something bad happened with IO...");
         }
     }
+
 }
+
+
+
+
+
+
+
+
+
+
+
