@@ -11,7 +11,7 @@ This project is a solution for an Open Targets Developer Technical Test. Objecti
 # Reproduce results with precompiled jars
 ## System requirements
 Java 11
-#### tested environements
+#### tested environments
 macos:
 ```shell
 java -version
