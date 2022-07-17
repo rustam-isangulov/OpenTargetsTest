@@ -1,5 +1,5 @@
 # Open Targets Test
-This project is a solution for Open Targets Developer Technical Test. Objectives for the test are described [here](../main/documents/ebi01989_software_developer_-_take_home_tech_test.pdf).
+This project is a solution for an Open Targets Developer Technical Test. Objectives for the test are described [here](../main/documents/ebi01989_software_developer_-_take_home_tech_test.pdf).
 
 # Results
 
@@ -11,7 +11,7 @@ This project is a solution for Open Targets Developer Technical Test. Objectives
 # Reproduce results with precompiled jars
 ## System requirements
 Java 11
-###### tested environements
+#### tested environements
 macos:
 ```shell
 java -version
