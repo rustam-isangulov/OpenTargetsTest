@@ -88,4 +88,54 @@ Number of target-target pairs with at least 2 shared connections: 350414
 Resulting joint dataset is exported to _./output_ directory.
 
 
-# Compile source code
+# Command line interface
+
+#### ```ftputil```
+
+```shell
+usage: java -jar ftputil.jar -d <dir> -l <local_dir> -r <remote_dir> -s
+       <ftp_address>
+
+Download files from a directory on an ftp server
+
+Options:
+ -d,--dir <dir>                directory to download files from (relative
+                               to remotedir) and to (relative to localdir)
+ -l,--localdir <local_dir>     local base directory
+ -r,--remotedir <remote_dir>   remote base directory
+ -s,--server <ftp_address>     remote ftp server uri
+
+Example:
+ java -jar ftputil.jar -s "ftp.ebi.ac.uk" -r
+"/pub/databases/opentargets/platform/21.11/output/etl/json/" -l "./data/"
+-d "evidence/sourceId=eva/"
+```
+
+#### ```overallscore```
+
+```shell
+usage: java -jar overallscore.jar -d <diseases_dir> -e <evidence_dir> -o
+       <output_dir> [-sn <number>] -t <targets_dir>
+
+Generate the overall association scores for given target-disease
+associations and Calculate the number of target-target pairs that share a
+connection to a specified number of diseases.
+
+Options:
+ -d,--diseases <diseases_dir>   directory that contains diseases *.json
+                                files
+ -e,--evidence <evidence_dir>   directory that contains evidence *.json
+                                files
+ -o,--output <output_dir>       directory for the overall association
+                                scores output *.json file
+ -sn,--sharednumber <number>    min number of shared diseases for
+                                target-target shared connection statistics
+ -t,--targets <targets_dir>     directory that contains targets *.json
+                                files
+
+Example:
+ java -jar overallscore.jar -e "./evidence/sourceId=eva/" -t "./targets/"
+-d "./diseases/" -o "./output/" -sn 2
+```
+
+---

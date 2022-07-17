@@ -145,7 +145,7 @@ public class CommandLineParameters {
         HelpFormatter formatter = new HelpFormatter();
         String footer = "\nExample:\n java -jar overallscore.jar -e \"./evidence/sourceId=eva/\" -t \"./targets/\" -d \"./diseases/\" -o \"./output/\" -sn 2";
         formatter.printHelp
-                ("TargetDiseaseScore"
+                ("java -jar overallscore.jar"
                         , "\nGenerate the overall association scores for given target-disease associations"
                         + " and Calculate the number of target-target pairs that share a connection to a specified number of diseases."
                         + "\n\nOptions:" , options, footer, true);
