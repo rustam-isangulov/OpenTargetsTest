@@ -51,7 +51,7 @@ java -jar bin/ftputil.jar -s "ftp.ebi.ac.uk" -r "/pub/databases/opentargets/plat
 java -jar bin/overallscore.jar -e "./data/evidence/sourceId=eva/" -t "./data/targets/" -d "./data/diseases/" -o "./output"
 ```
 
-expected output:
+<details><summary>expected output</summary>
 ```shell
 Proceeding with the following parameters
 	Evidence path: [./data/evidence/sourceId=eva]
