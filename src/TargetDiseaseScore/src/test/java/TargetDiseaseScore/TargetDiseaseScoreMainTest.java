@@ -22,6 +22,6 @@ public class TargetDiseaseScoreMainTest {
 
         processor.exportJointDataSet(list, outputDir, "json_file.json");
 
-        assertTrue(Files.exists(outputDir), ()->"Method should create a json file on the output directory");
+        assertTrue(Files.exists(outputDir), ()->"Method should create a json file in the output directory");
     }
 }

@@ -1,8 +1,11 @@
 package FtpUtil;
 
+import FtpUtil.cli.CommandLineParameters;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -16,7 +19,27 @@ public class FtpUtil {
 
     // TODO Add proper handling of command line parameters
     public static void main(String... args) {
-        System.out.println("FtpUtil is starting...");
+        //
+        // understand user defined options
+        //
+
+        var clp = new CommandLineParameters();
+
+        try {
+            clp.parse(args);
+        } catch (ParseException ex) {
+            System.out.println("Parsing of command line arguments failed: "
+                    + ex.getMessage());
+
+            System.out.println();
+
+            // just a bit annoying...
+            // leave it for now...
+            clp.printHelp();
+
+            System.exit(1);
+        }
+
 
         if (Arrays.stream(args).count() < 4) {
             System.out.println(("Four arguments are required: server, remoteBase, localBase, dir"));
@@ -24,47 +47,42 @@ public class FtpUtil {
         }
 
         System.out.println();
-        System.out.println("Server: [" + args[0] + "]");
-        System.out.println("Remote base: [" + args[1] + "]");
-        System.out.println("Local base: [" + args[2] + "]");
-        System.out.println("Dir: [" + args[3] + "]");
+        System.out.println("Proceeding with the following parameters");
+        System.out.println("\tServer: \t\t[" + clp.getServer() + "]");
+        System.out.println("\tRemote base: \t[" + clp.getRemoteBase() + "]");
+        System.out.println("\tLocal base: \t[" + clp.getLocalBase() + "]");
+        System.out.println("\tDir: \t\t\t[" + clp.getDir() + "]");
 
-        ConnectAndDownload(args[0], args[1], args[2], args[3]);
+        //
+        // resolve directories
+        //
+        Path remotePath = clp.getRemoteBase().resolve(clp.getDir());
+        Path localPath = clp.getLocalBase().resolve(clp.getDir());
 
-        System.out.println("FtpUtil has finished.");
-    }
-
-    // TODO move dealing with raw String to main, use URI / Path for parameters here
-    public static void ConnectAndDownload
-            (String strServer, String strRemoteBase, String strLocalBase, String strDir ) {
-
-        // TODO Clean test inputs organize test classes
-        String server = strServer; //= "ftp.ebi.ac.uk";
-
-        Path remoteDirBase = Path.of(strRemoteBase); //= Path.of("/pub/databases/opentargets/platform/21.11/output/etl/json/");
-        Path localDirBase = Path.of(strLocalBase); //= Path.of(".");
-        Path dir = Path.of(strDir); //= Path.of("evidence/sourceId=eva/");
-
-        Path remoteDir = remoteDirBase.resolve(dir);
-        Path localDir = localDirBase.resolve(dir);
-
-        System.out.println();
-        System.out.println("Remote FTP server: [" + server + "]");
-        System.out.println("Remote source directory: [" +  remoteDir.toString() +"]");
-        System.out.println("Local destination directory: [" + localDir.toString() + "]");
-
+        //
         // ensure we have the local dir structure in place
+        //
+
         try {
-            Files.createDirectories(localDir);
+            Files.createDirectories(localPath);
         } catch (IOException ex) {
             System.out.format("Unable to create local directory: [%s] reason: [%s]"
-                    , localDir.toString(), ex.getMessage());
+                    , localPath.toString(), ex.getMessage());
             System.out.println();
             System.exit(0);
         }
 
+        //
+        // run the job
+        //
+        ConnectAndDownload(clp.getServer(), remotePath, localPath);
+    }
+
+    public static void ConnectAndDownload
+            (URI server, Path remoteDir, Path localDir) {
+
         // download file from FTP server
-        try(var client = FtpClient.of(server)) {
+        try(var client = FtpClient.of(server.toString())) {
             var files = client.listFiles(remoteDir);
 
             // have the same predicate for counting and downloading

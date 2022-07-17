@@ -48,7 +48,7 @@ public class TargetDiseaseScoreMain {
         }
 
         System.out.println();
-        System.out.println("Proceeding with following parameters");
+        System.out.println("Proceeding with the following parameters");
         System.out.println("\tEvidence path: [" + clp.getPathToEvidence() + "]");
         System.out.println("\tTargets path: [" + clp.getPathToTargets() + "]");
         System.out.println("\tDiseases path: [" + clp.getPathToDiseases() + "]");

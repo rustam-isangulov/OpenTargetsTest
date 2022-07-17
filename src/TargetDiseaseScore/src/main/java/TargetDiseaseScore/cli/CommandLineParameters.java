@@ -97,54 +97,53 @@ public class CommandLineParameters {
 
         CommandLineParser parser = new DefaultParser();
 
-//        try {
-            CommandLine line = parser.parse(options, args);
+        CommandLine line = parser.parse(options, args);
 
-            // parse shared number of diseases option
-            try {
-                minNumberOfSharedDiseases = Integer
-                        .parseInt(line.getOptionValue(sharedNum, "2"));
-            } catch (NumberFormatException ex) {
-                throw new ParseException("Bad value for "
-                        + "<" + sharedNum.getArgName() + ">");
-            }
+        // parse shared number of diseases option
+        try {
+            minNumberOfSharedDiseases = Integer
+                    .parseInt(line.getOptionValue(sharedNum, "2"));
+        } catch (NumberFormatException ex) {
+            throw new ParseException("Bad value for "
+                    + "<" + sharedNum.getArgName() + ">");
+        }
 
-            // parse targets path
-            pathToTargets = Path.of(line.getOptionValue(targetsDir));
+        // parse targets path
+        pathToTargets = Path.of(line.getOptionValue(targetsDir));
 
-            if (!Files.exists(pathToTargets) && !Files.isDirectory(pathToTargets)) {
-                throw new ParseException("Bad value for "
-                        + "<" + targetsDir.getArgName() + ">");
-            }
+        if (!Files.exists(pathToTargets) && !Files.isDirectory(pathToTargets)) {
+            throw new ParseException("Bad value for "
+                    + "<" + targetsDir.getArgName() + ">");
+        }
 
-            // parse diseases path
-            pathToDiseases = Path.of(line.getOptionValue(diseasesDir));
+        // parse diseases path
+        pathToDiseases = Path.of(line.getOptionValue(diseasesDir));
 
-            if (!Files.exists(pathToDiseases) && !Files.isDirectory(pathToDiseases)) {
-                throw new ParseException("Bad value for "
-                        + "<" + diseasesDir.getArgName() + ">");
-            }
+        if (!Files.exists(pathToDiseases) && !Files.isDirectory(pathToDiseases)) {
+            throw new ParseException("Bad value for "
+                    + "<" + diseasesDir.getArgName() + ">");
+        }
 
-            // parse evidence path
-            pathToEvidence = Path.of(line.getOptionValue(evidenceDir));
+        // parse evidence path
+        pathToEvidence = Path.of(line.getOptionValue(evidenceDir));
 
-            if (!Files.exists(pathToEvidence) && !Files.isDirectory(pathToEvidence)) {
-                throw new ParseException("Bad value for "
-                        + "<" + evidenceDir.getArgName() + ">");
-            }
+        if (!Files.exists(pathToEvidence) && !Files.isDirectory(pathToEvidence)) {
+            throw new ParseException("Bad value for "
+                    + "<" + evidenceDir.getArgName() + ">");
+        }
 
-            // parse output path
-            pathToOutput = Path.of(line.getOptionValue(outputDir));
+        // parse output path
+        pathToOutput = Path.of(line.getOptionValue(outputDir));
 
-            if (!Files.exists(pathToOutput) && !Files.isDirectory(pathToOutput)) {
-                throw new ParseException("Bad value for "
-                        + "<" + outputDir.getArgName() + ">");
-            }
+        if (!Files.exists(pathToOutput) && !Files.isDirectory(pathToOutput)) {
+            throw new ParseException("Bad value for "
+                    + "<" + outputDir.getArgName() + ">");
+        }
    }
 
     public void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
-        String footer = "\nExample:\n java -jar TargetDiseaseScore -e \"./evidence/sourceId=eva/\" -t \"./targets/\" -d \"./diseases/\" -o \"./output/\" -sn 2";
+        String footer = "\nExample:\n java -jar overallscore.jar -e \"./evidence/sourceId=eva/\" -t \"./targets/\" -d \"./diseases/\" -o \"./output/\" -sn 2";
         formatter.printHelp
                 ("TargetDiseaseScore"
                         , "\nGenerate the overall association scores for given target-disease associations"
