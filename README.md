@@ -9,8 +9,15 @@ This project is a solution for Open Targets Developer Technical Test. Objectives
 |`Count how many target-target pairs share a connection to at least two diseases.` | Number of target-target pairs with at least 2 shared connections: **_350,414_** |
 
 # Reproduce results with precompiled jars
+1. clone this repository
+
 ```shell
 git clone https://github.com/rustam-isangulov/OpenTargetsTest.git
+```
+2. change directory to `OpenTargetsTest`
 
+```shell
+cd OpenTargetsTest
+```
 
 # Compile source code
