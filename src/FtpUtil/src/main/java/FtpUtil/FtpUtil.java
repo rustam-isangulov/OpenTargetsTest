@@ -16,8 +16,6 @@ public class FtpUtil {
     private static long totalFilesToDownload = 0;
     private static long countDownloadedFiles = 0;
 
-
-    // TODO Add proper handling of command line parameters
     public static void main(String... args) {
         //
         // understand user defined options
@@ -81,7 +79,7 @@ public class FtpUtil {
     public static void ConnectAndDownload
             (URI server, Path remoteDir, Path localDir) {
 
-        // download file from FTP server
+        // download files from FTP server
         try(var client = FtpClient.of(server.toString())) {
             var files = client.listFiles(remoteDir);
 
