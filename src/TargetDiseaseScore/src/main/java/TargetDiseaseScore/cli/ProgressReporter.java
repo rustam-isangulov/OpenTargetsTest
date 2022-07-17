@@ -9,17 +9,13 @@ public class ProgressReporter {
     private long startTime;
     private static Map<Action, ProgressReporter> map = new HashMap<>();
 
-    public enum Action {EVIDENCE_FILE, EVIDENCE_MAP, TARGETS, DISEASES, JOINT_DATASET, SEARCHING}
+    public enum Action {EVIDENCE, TARGETS, DISEASES, JOINT_DATASET, SEARCHING}
 
     static
     {
-        map.put(Action.EVIDENCE_FILE, new ProgressReporter
-                ("evidence data files"
-                , "target-disease associations"));
-
-        map.put(Action.EVIDENCE_MAP, new ProgressReporter
-                ("evidence map"
-                        , "target-disease overall scores"));
+        map.put(Action.EVIDENCE, new ProgressReporter
+                ("evidence data"
+                , "target-disease overall association scores"));
 
         map.put(Action.TARGETS, new ProgressReporter
                 ("target data"

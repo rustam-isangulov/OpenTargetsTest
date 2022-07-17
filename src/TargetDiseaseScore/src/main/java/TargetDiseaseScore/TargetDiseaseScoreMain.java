@@ -69,22 +69,17 @@ public class TargetDiseaseScoreMain {
         // test part 1
         //
 
-        ProgressReporter.of(EVIDENCE_FILE).start();
+        ProgressReporter.of(EVIDENCE).start();
 
         // Process target-disease evidence files
         Map<String, List<TDEvidence>> evidenceMap =
                 processor.processTDEvidence(clp.getPathToEvidence());
 
-        ProgressReporter.of(EVIDENCE_FILE).finish(evidenceMap.size());
-
-
-        ProgressReporter.of(EVIDENCE_MAP).start();
-
         // Generate overall association scores
         List<TDComposite> overallList =
                 processor.generateOverallScores(evidenceMap);
 
-        ProgressReporter.of(EVIDENCE_MAP).finish(overallList.size());
+        ProgressReporter.of(EVIDENCE).finish(overallList.size());
 
 
         ProgressReporter.of(TARGETS).start();

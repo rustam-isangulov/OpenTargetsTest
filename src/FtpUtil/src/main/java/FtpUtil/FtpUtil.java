@@ -46,10 +46,10 @@ public class FtpUtil {
 
         System.out.println();
         System.out.println("Proceeding with the following parameters");
-        System.out.println("\tServer: \t\t[" + clp.getServer() + "]");
-        System.out.println("\tRemote base: \t[" + clp.getRemoteBase() + "]");
-        System.out.println("\tLocal base: \t[" + clp.getLocalBase() + "]");
-        System.out.println("\tDir: \t\t\t[" + clp.getDir() + "]");
+        System.out.println("\tServer: [" + clp.getServer() + "]");
+        System.out.println("\tRemote: [" + clp.getRemoteBase() + "]");
+        System.out.println("\tLocal:  [" + clp.getLocalBase() + "]");
+        System.out.println("\tDir:    [" + clp.getDir() + "]");
 
         //
         // resolve directories
