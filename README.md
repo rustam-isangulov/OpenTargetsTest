@@ -52,6 +52,7 @@ java -jar bin/overallscore.jar -e "./data/evidence/sourceId=eva/" -t "./data/tar
 ```
 
 <details><summary>expected output</summary>
+<p>
 
 ```shell
 Proceeding with the following parameters
@@ -81,6 +82,8 @@ Start processing targets with shared disease connections...
 Total elapsed time for the targets with shared disease connections processing: 958 (ms)
 Number of target-target pairs with at least 2 shared connections: 350414
 ```
+</p>
+</details>
 
 Resulting joint dataset is exported to _./output_ directory.
 
