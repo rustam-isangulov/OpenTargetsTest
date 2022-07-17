@@ -30,11 +30,11 @@ public class ProgressReporter {
                         , "diseases"));
 
         map.put(Action.JOINT_DATASET, new ProgressReporter
-                ("targets with shared disease connections"
-                        , "json files"));
+                ("joint Association/Target/Disease data set"
+                        , "overall association scores"));
 
         map.put(Action.SEARCHING, new ProgressReporter
-                ("joint Association/Target/Disease data set"
+                ("targets with shared disease connections"
                         , "target-target pairs with at least 2 shared connections"));
     }
 

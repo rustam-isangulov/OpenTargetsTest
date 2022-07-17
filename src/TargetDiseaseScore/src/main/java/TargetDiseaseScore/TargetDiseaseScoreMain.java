@@ -112,7 +112,7 @@ public class TargetDiseaseScoreMain {
 
         processor.exportJointDataSet(jointData, clp.getPathToOutput(), "joint_dataset.json");
 
-        ProgressReporter.of(JOINT_DATASET).finish(1);
+        ProgressReporter.of(JOINT_DATASET).finish(jointData.size());
 
         //
         // test part 2
