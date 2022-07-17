@@ -11,7 +11,7 @@ This project is a solution for Open Targets Developer Technical Test. Objectives
 # Reproduce results with precompiled jars
 ## System requirements
 Java 11
-### tested environements
+###### tested environements
 macos:
 ```shell
 java -version
@@ -38,5 +38,27 @@ git clone https://github.com/rustam-isangulov/OpenTargetsTest.git
 ```shell
 cd OpenTargetsTest
 ```
+3. download data
+
+```shell
+java -jar bin/ftputil.jar -s "ftp.ebi.ac.uk" -r "/pub/databases/opentargets/platform/21.11/output/etl/json/" -l "./data/" -d "evidence/sourceId=eva/"
+```
+
+```shell
+java -jar bin/ftputil.jar -s "ftp.ebi.ac.uk" -r "/pub/databases/opentargets/platform/21.11/output/etl/json/" -l "./data/" -d "diseases/"
+```
+
+```shell
+java -jar bin/ftputil.jar -s "ftp.ebi.ac.uk" -r "/pub/databases/opentargets/platform/21.11/output/etl/json/" -l "./data/" -d "targets"
+```
+
+3. process data to produce results
+
+```shell
+java -jar bin/overallscore.jar -e "./data/evidence/sourceId=eva/" -t "./data/targets/" -d "./data/diseases/" -o "./output"
+```
+
+Resulting joint dataset is exported to _./output_ directory.
+
 
 # Compile source code
