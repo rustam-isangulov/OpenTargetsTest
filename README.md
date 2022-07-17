@@ -5,7 +5,7 @@ This project is a solution for an Open Targets Developer Technical Test. Objecti
 
 |Objective|Results|
 |----|----|
-|`...generate the overall association score for a given target-disease association.` | number of overall association scores: ```**_25,132_**```; <br />resulting table in json format is in **_./output_** directory |
+|`...generate the overall association score for a given target-disease association.` | number of overall association scores: **```25,132```**; <br />resulting table in json format is in **_./output_** directory |
 |`Count how many target-target pairs share a connection to at least two diseases.` | Number of target-target pairs with at least 2 shared connections: **_350,414_** |
 
 # Reproduce results with precompiled jars
