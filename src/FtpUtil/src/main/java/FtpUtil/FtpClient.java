@@ -60,6 +60,9 @@ public class FtpClient implements Closeable {
         // login
         ftp.login(user, password);
 
+        // passive mode to be able to work from inside VMs
+        ftp.enterLocalPassiveMode();
+
         // now ready to access files and dirs
     }
 
