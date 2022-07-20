@@ -6,9 +6,9 @@ import java.util.Arrays;
 public class Calculator {
     static double median(double[] l) {
         if (l == null)
-            throw new RuntimeException("Attempt to calculate median value on a null list");
+            throw new IllegalArgumentException("Attempt to calculate median value on a null list");
         if (l.length == 0)
-            throw new RuntimeException("Attempt to calculate median value on an empty list");
+            throw new IllegalArgumentException("Attempt to calculate median value on an empty list");
 
         // sort first
         Arrays.sort(l);
