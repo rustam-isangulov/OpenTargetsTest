@@ -17,9 +17,7 @@ public class CalculatorTest {
     @MethodSource("medianInputs")
     @DisplayName("Median calculation test \uD83E\uDD20.")
     public void testMedian(double[] input, double output) {
-        Calculator calculator = new Calculator();
-
-        assertEquals(output, calculator.median(input), 0);
+        assertEquals(output, Calculator.median(input), 0);
     }
 
     public static Stream<Arguments> medianInputs() {
@@ -29,17 +27,15 @@ public class CalculatorTest {
                 , Arguments.of(new double[]{2}, 2)
         );
     }
-    
+
 
     @Test
     @DisplayName("Median calculation bad input test.")
     public void testMedianBadInputs() {
-        Calculator calculator = new Calculator();
-
         assertAll("Test for illegal array inputs"
-                , () -> assertThrows(IllegalArgumentException.class, () -> calculator.median(null)
+                , () -> assertThrows(IllegalArgumentException.class, () -> Calculator.median(null)
                         , () -> "null value should throw IllegalArgumentException")
-                , () -> assertThrows(IllegalArgumentException.class, () ->calculator.median(new double[]{})
+                , () -> assertThrows(IllegalArgumentException.class, () -> Calculator.median(new double[]{})
                         , () -> "empty array should throw IllegalArgumentException"));
 
     }
