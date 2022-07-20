@@ -29,19 +29,7 @@ public class CalculatorTest {
                 , Arguments.of(new double[]{2}, 2)
         );
     }
-
-//    public void testMedian() {
-//        Calculator calculator = new Calculator();
-//
-//        assertAll("Test for legitimate array inputs"
-//        , () -> assertEquals(6, calculator.median(new double[] {1, 3, 3, 6, 7, 8, 9}), 0
-//                        , () -> "uneven number of elements should give middle value as the result")
-//        , () -> assertEquals(4.5, calculator.median(new double[] {1, 2, 3, 4, 5, 6, 8, 9})
-//                , () -> "even number of elements should give arithmetic mean of the two middle values")
-//        , () -> assertEquals(2, calculator.median(new double[]{2}), 0
-//                , () -> "degenerate case for a single value returns it as the result"));
-//    }
-
+    
 
     @Test
     @DisplayName("Median calculation bad input test.")
