@@ -4,6 +4,8 @@ import FtpUtil.cli.CommandLineParameters;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.net.ftp.FTPFile;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -12,8 +14,6 @@ import java.util.Arrays;
 import java.util.function.Predicate;
 
 public class FtpUtil {
-
-    private static long totalFilesToDownload = 0;
     private static long countDownloadedFiles = 0;
 
     public static void main(String... args) {
@@ -80,16 +80,11 @@ public class FtpUtil {
             (URI server, Path remoteDir, Path localDir) {
 
         // download files from FTP server
-        try(var client = FtpClient.of(server.toString())) {
+        try(var client = new FtpClient(server.toString()).open();) {
             var files = client.listFiles(remoteDir);
 
             // have the same predicate for counting and downloading
             Predicate<FTPFile> fileFilter = FTPFile::isFile;
-
-            //  find total number of files to download
-            totalFilesToDownload = files.stream()
-                    .filter(fileFilter)
-                    .count();
 
             // prepare to measure elapsed time
             long startTime = System.nanoTime();
@@ -105,7 +100,13 @@ public class FtpUtil {
                                 , ++countDownloadedFiles, files.size(), f.getName());
                         System.out.println();
 
-                        client.downloadFile(remoteDir, Path.of(f.getName()), localDir);
+                            try (var out = new BufferedOutputStream(new FileOutputStream
+                                    (localDir.resolve(f.getName()).toFile()))) {
+
+                                client.downloadFile(remoteDir.resolve(f.getName()), out);
+                            } catch (IOException ex) {
+                                throw new RuntimeException("FTP file download has failed: ", ex);
+                            }
                     });
 
             // report elapsed time
