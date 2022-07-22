@@ -77,6 +77,7 @@ public class FtpClientIntegrationTest {
 
 
     @Test
+    @DisplayName("Check if requests to list files in a remote directory work.")
     public void givenRemoteDir_whenListingFiles_thenItIsContainedInTheList() throws IOException {
 
         try (var ftpClient = FtpClient.getClient("localhost")) {
@@ -91,6 +92,7 @@ public class FtpClientIntegrationTest {
 
 
     @Test
+    @DisplayName("Check if downloading of a remote file works.")
     public void givenRemoteFile_whenDownload_thenContentIsAvailableAsStream(@TempDir Path localDir) throws IOException {
 
         try (var ftpClient = FtpClient.getClient("localhost")) {
@@ -99,11 +101,16 @@ public class FtpClientIntegrationTest {
 
                 ftpClient.downloadFile(longFilePath, out);
             }
+
+            assertTrue(Files.readAllLines(localDir.resolve(longFilePath.getFileName())).stream()
+                            .collect(Collectors.joining()).startsWith(longFileContent)
+                    , () -> "Content of downloaded file has to mach the pre-defined string.");
         }
     }
 
 
     @Test
+    @DisplayName("Check if we get a positive reply after connecting to the server.")
     public void givenNewlyConnectedFtpClient_whenCheckingLastReply_then221Connected() throws IOException {
         int loggedInProceedCode = 230;
 
@@ -116,6 +123,7 @@ public class FtpClientIntegrationTest {
 
 
     @Test
+    @DisplayName("Check how the client reacts to the wrong user not being logged in.")
     public void givenNewlyCreatedFTPClient_whenBadUserName_then530Error() throws IOException {
         String badUserName = "nonympus";
         int notLoggedInUserFTPCode = 530;
@@ -133,6 +141,7 @@ public class FtpClientIntegrationTest {
 
 
     @Test
+    @DisplayName("Check how the client reacts to a negative server code from at connect.")
     public void givenNewlyCreatedFTPClient_whenBadResponseOnConnect_thenException() throws IOException {
 
         // change response to the next Connect request
@@ -149,6 +158,7 @@ public class FtpClientIntegrationTest {
 
 
     @Test
+    @DisplayName("Check the client (in verbose mode) properly closes connection to the server. ")
     public void givenNewlyCreatedFTPClientVerbose_whenClose_thenItDisconnects() throws IOException {
         FtpClient clientRef;
 
