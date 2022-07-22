@@ -80,7 +80,7 @@ public class FtpUtil {
             (URI server, Path remoteDir, Path localDir) {
 
         // download files from FTP server
-        try(var client = new FtpClient(server.toString()).open();) {
+        try(var client = FtpClient.getClient(server.toString());) {
             var files = client.listFiles(remoteDir);
 
             // have the same predicate for counting and downloading

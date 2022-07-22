@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class FtpClientIntegrationTest {
     private FakeFtpServer fakeFtpServer;
-    private FtpClient ftpClient;
+    //private FtpClient ftpClient;
 
     private Path longFilePath = Path.of
             ("/pub/databases/opentargets/platform/21.11/output/" +
@@ -67,39 +67,38 @@ public class FtpClientIntegrationTest {
         fakeFtpServer.start();
 
         // ftp "server" should be up and running at this point
-
-        // connect ftpClient to the server
-        ftpClient = new FtpClient("localhost");
-        ftpClient.open();
     }
 
 
     @AfterEach
     public void tearDown() throws IOException {
-        ftpClient.close();
         fakeFtpServer.stop();
     }
 
 
     @Test
     public void givenRemoteDir_whenListingFiles_thenItIsContainedInTheList() throws IOException {
-        List<FTPFile> files = ftpClient.listFiles(Path.of
-                ("/pub/databases/opentargets/platform/21.11/output/etl/json/diseases/"));
 
-        assertAll("Test to list and retrieve a single file"
-                , () -> assertTrue(1 == files.size(), () -> "Number of files int he dir is 1!")
-                , () -> assertEquals(longFilePath.getFileName().toString(), files.get(0).getName()));
+        try (var ftpClient = FtpClient.getClient("localhost")) {
+            List<FTPFile> files = ftpClient.listFiles(Path.of
+                    ("/pub/databases/opentargets/platform/21.11/output/etl/json/diseases/"));
 
+            assertAll("Test to list and retrieve a single file"
+                    , () -> assertTrue(1 == files.size(), () -> "Number of files int he dir is 1!")
+                    , () -> assertEquals(longFilePath.getFileName().toString(), files.get(0).getName()));
+        }
     }
 
 
     @Test
     public void givenRemoteFile_whenDownload_thenContentIsAvailableAsStream(@TempDir Path localDir) throws IOException {
 
-        try (var out = new BufferedOutputStream(new FileOutputStream
-                (localDir.resolve(longFilePath.getFileName()).toFile()))) {
+        try (var ftpClient = FtpClient.getClient("localhost")) {
+            try (var out = new BufferedOutputStream(new FileOutputStream
+                    (localDir.resolve(longFilePath.getFileName()).toFile()))) {
 
-            ftpClient.downloadFile(longFilePath, out);
+                ftpClient.downloadFile(longFilePath, out);
+            }
         }
     }
 
@@ -108,7 +107,7 @@ public class FtpClientIntegrationTest {
     public void givenNewlyConnectedFtpClient_whenCheckingLastReply_then221Connected() throws IOException {
         int loggedInProceedCode = 230;
 
-        try (var client = new FtpClient("localhost").open()) {
+        try (var client = FtpClient.getClient("localhost")) {
 
             assertTrue(loggedInProceedCode == client.getReplyCode()
                     , () -> "FTP server should return code 230 after connect/login.");
@@ -121,8 +120,8 @@ public class FtpClientIntegrationTest {
         String badUserName = "nonympus";
         int notLoggedInUserFTPCode = 530;
 
-        try(var newClient = new FtpClient("localhost")
-                .open(fakeFtpServer.getServerControlPort(), badUserName, "" ) ) {
+        try(var newClient = FtpClient.getClient
+                ("localhost",fakeFtpServer.getServerControlPort(), badUserName, "" )) {
 
             // try tp list files while not logged in
             newClient.listFiles(Path.of("/"));
@@ -144,30 +143,17 @@ public class FtpClientIntegrationTest {
 
         // test connect() method
         assertThrows(IOException.class
-                , () -> new FtpClient("localhost").open(fakeFtpServer.getServerControlPort(), "anonymous", "")
+                , () -> FtpClient.getClient("localhost", fakeFtpServer.getServerControlPort(), "anonymous", "")
                 , () -> "Return code 534 (not a positive completion) should cause an IOException");
     }
 
 
     @Test
-    public void givenNewlyCreatedFTPClient_whenClose_thenItDisconnects() throws IOException {
-        FtpClient clientRef;
-
-        try (var newClient = new FtpClient("localhost").open()) {
-            clientRef = newClient;
-        }
-
-        assertFalse(clientRef.isConnected()
-                , () -> "FTP server should be disconnected after close() call.");
-    }
-
-    @Test
     public void givenNewlyCreatedFTPClientVerbose_whenClose_thenItDisconnects() throws IOException {
         FtpClient clientRef;
 
-        try (var newClient = new FtpClient
-                ("localhost"
-                        , FtpClient.ATTRIBUTES.VERBOSE).open()) {
+        try (var newClient = FtpClient.getClient
+                ("localhost", FtpClient.ATTRIBUTES.VERBOSE)) {
             clientRef = newClient;
         }
 

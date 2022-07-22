@@ -28,6 +28,22 @@ public class FtpClient implements Closeable {
         }
     }
 
+    public static FtpClient getClient(String server, ATTRIBUTES... attr) throws IOException {
+        FtpClient client = new FtpClient(server, attr);
+
+        client.open();
+
+        return client;
+    }
+
+    public static FtpClient getClient(String server, int port, String user, String password, ATTRIBUTES... attr) throws IOException {
+        FtpClient client = new FtpClient(server, attr);
+
+        client.open(port, user, password);
+
+        return client;
+    }
+
     public void downloadFile(Path remoteFile, OutputStream out) throws IOException {
 
         ftp.retrieveFile(remoteFile.toString(), out);
@@ -39,7 +55,7 @@ public class FtpClient implements Closeable {
                 .collect(Collectors.toList());
     }
 
-    public FtpClient open() throws IOException {
+    private FtpClient open() throws IOException {
         // default port
         int port = 21;
         // username for public access data
@@ -50,7 +66,7 @@ public class FtpClient implements Closeable {
         return this.open(port, user, password);
     }
 
-    public FtpClient open(int port, String user, String password) throws IOException {
+    private FtpClient open(int port, String user, String password) throws IOException {
         // connect
         ftp.connect(server, port);
 
