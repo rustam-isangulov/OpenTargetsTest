@@ -8,45 +8,40 @@ import org.apache.commons.net.ftp.FTPReply;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class FtpClient implements Closeable {
-    public enum ATTRIBUTES { VERBOSE }
-
-    private final FTPClient ftp = new FTPClient();
+    private final FTPClient ftp;
     private final String server;
 
-    public FtpClient(String server, ATTRIBUTES... attr) {
-        this.server = server;
 
-        // add detailed output from FTPClient
-        if (Arrays.stream(attr).anyMatch(a -> a == ATTRIBUTES.VERBOSE)) {
-            ftp.addProtocolCommandListener
-                    (new PrintCommandListener(new PrintWriter(System.out)));
-        }
-    }
+    public static FtpClient getClient(String serverAddress, FTPClient ftp) throws IOException {
+        // default port
+        int port = 21;
+        // username for public access data
+        String user = "anonymous";
+        // password for anonymous users
+        String password = "";
 
-    public static FtpClient getClient(String server, ATTRIBUTES... attr) throws IOException {
-        FtpClient client = new FtpClient(server, attr);
-
-        client.open();
-
-        return client;
-    }
-
-    public static FtpClient getClient(String server, int port, String user, String password, ATTRIBUTES... attr) throws IOException {
-        FtpClient client = new FtpClient(server, attr);
+        FtpClient client = new FtpClient(serverAddress, ftp);
 
         client.open(port, user, password);
 
         return client;
     }
 
-    public void downloadFile(Path remoteFile, OutputStream out) throws IOException {
+    public static FtpClient getClient(String server, FTPClient ftp, int port, String user, String password) throws IOException {
+        FtpClient client = new FtpClient(server, ftp);
 
-        ftp.retrieveFile(remoteFile.toString(), out);
+        client.open(port, user, password);
+
+        return client;
+    }
+
+    public FtpClient(String serverAddress, FTPClient ftp) {
+        this.server = serverAddress;
+        this.ftp = ftp;
     }
 
     public List<FTPFile> listFiles(Path path) throws IOException {
@@ -55,15 +50,23 @@ public class FtpClient implements Closeable {
                 .collect(Collectors.toList());
     }
 
-    private FtpClient open() throws IOException {
-        // default port
-        int port = 21;
-        // username for public access data
-        String user = "anonymous";
-        // password for anonymous users
-        String password = "";
+    public void downloadFile(Path remoteFile, OutputStream out) throws IOException {
 
-        return this.open(port, user, password);
+        ftp.retrieveFile(remoteFile.toString(), out);
+    }
+
+    public int getReplyCode() throws IOException {
+        return ftp.getReplyCode();
+    }
+
+    public boolean isConnected() throws IOException {
+        return ftp.isConnected();
+    }
+
+    @Override
+    public void close() throws IOException {
+        ftp.logout();
+        ftp.disconnect();
     }
 
     private FtpClient open(int port, String user, String password) throws IOException {
@@ -81,24 +84,18 @@ public class FtpClient implements Closeable {
         // login
         ftp.login(user, password);
 
+        // check for connection failures
+        if (!FTPReply.isPositiveCompletion(ftp.getReplyCode())) {
+            ftp.disconnect();
+            throw new IOException
+                    ("Unable to login to FTP Server: " + server
+                            + " port: " + port);
+        }
+
         // passive mode to be able to work from inside VMs
         ftp.enterLocalPassiveMode();
 
         // now ready to access files and dirs
         return this;
-    }
-
-    public int getReplyCode() throws IOException {
-        return ftp.getReplyCode();
-    }
-
-    public boolean isConnected() throws IOException {
-        return ftp.isConnected();
-    }
-
-    @Override
-    public void close() throws IOException {
-        ftp.logout();
-        ftp.disconnect();
     }
 }

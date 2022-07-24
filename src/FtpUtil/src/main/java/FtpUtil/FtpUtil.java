@@ -2,6 +2,7 @@ package FtpUtil;
 
 import FtpUtil.cli.CommandLineParameters;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.BufferedOutputStream;
@@ -80,7 +81,7 @@ public class FtpUtil {
             (URI server, Path remoteDir, Path localDir) {
 
         // download files from FTP server
-        try(var client = FtpClient.getClient(server.toString());) {
+        try(var client = FtpClient.getClient(server.toString(), new FTPClient());) {
             var files = client.listFiles(remoteDir);
 
             // have the same predicate for counting and downloading

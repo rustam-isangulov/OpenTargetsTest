@@ -26,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class FtpClientIntegrationTest {
     private FakeFtpServer fakeFtpServer;
-    //private FtpClient ftpClient;
 
     private Path longFilePath = Path.of
             ("/pub/databases/opentargets/platform/21.11/output/" +
@@ -41,133 +40,168 @@ public class FtpClientIntegrationTest {
             ":{\"url\":\"http://purl.obolibrary.org/obo/HP_0000031\",\"name\":\"HP_0000031\"}}}";
 
 
-    @BeforeEach
-    public void setUp() throws IOException {
-        fakeFtpServer = new FakeFtpServer();
+    @Nested
+    @DisplayName("Given there is an FTP server")
+    class ftpServer {
 
-        // setup default account
-        UserAccount anonymous = new UserAccount();
-        anonymous.setPasswordRequiredForLogin(false);
-        anonymous.setUsername("anonymous");
-        anonymous.setHomeDirectory("/");
+        @BeforeEach
+        public void setUp() throws IOException {
+            fakeFtpServer = new FakeFtpServer();
 
-        fakeFtpServer.addUserAccount(anonymous);
+            // setup default account
+            UserAccount anonymous = new UserAccount();
+            anonymous.setPasswordRequiredForLogin(false);
+            anonymous.setUsername("anonymous");
+            anonymous.setHomeDirectory("/");
 
-        // setup sample directory and files structure
-        FileSystem fileSystem = new UnixFakeFileSystem();
-        fileSystem.add(new DirectoryEntry("/data"));
-        fileSystem.add(new FileEntry("/data/test.txt","test text"));
-        fileSystem.add(new DirectoryEntry("/pub/databases/opentargets/platform/21.11/output/etl/json/"));
-        fileSystem.add(new DirectoryEntry(longFilePath.getParent().toString()));
-        fileSystem.add(new FileEntry(longFilePath.toString(), longFileContent));
+            fakeFtpServer.addUserAccount(anonymous);
 
-        fakeFtpServer.setFileSystem(fileSystem);;
-        fakeFtpServer.setSystemName("Unix");
+            // setup sample directory and files structure
+            FileSystem fileSystem = new UnixFakeFileSystem();
+            fileSystem.add(new DirectoryEntry("/data"));
+            fileSystem.add(new FileEntry("/data/test.txt", "test text"));
+            fileSystem.add(new DirectoryEntry("/pub/databases/opentargets/platform/21.11/output/etl/json/"));
+            fileSystem.add(new DirectoryEntry(longFilePath.getParent().toString()));
+            fileSystem.add(new FileEntry(longFilePath.toString(), longFileContent));
 
-        fakeFtpServer.start();
+            fakeFtpServer.setFileSystem(fileSystem);
+            ;
+            fakeFtpServer.setSystemName("Unix");
 
-        // ftp "server" should be up and running at this point
-    }
+            fakeFtpServer.start();
 
-
-    @AfterEach
-    public void tearDown() throws IOException {
-        fakeFtpServer.stop();
-    }
-
-
-    @Test
-    @DisplayName("Check if requests to list files in a remote directory work.")
-    public void givenRemoteDir_whenListingFiles_thenItIsContainedInTheList() throws IOException {
-
-        try (var ftpClient = FtpClient.getClient("localhost")) {
-            List<FTPFile> files = ftpClient.listFiles(Path.of
-                    ("/pub/databases/opentargets/platform/21.11/output/etl/json/diseases/"));
-
-            assertAll("Test to list and retrieve a single file"
-                    , () -> assertTrue(1 == files.size(), () -> "Number of files int he dir is 1!")
-                    , () -> assertEquals(longFilePath.getFileName().toString(), files.get(0).getName()));
+            // ftp "server" should be up and running at this point
         }
-    }
 
 
-    @Test
-    @DisplayName("Check if downloading of a remote file works.")
-    public void givenRemoteFile_whenDownload_thenContentIsAvailableAsStream(@TempDir Path localDir) throws IOException {
+        @AfterEach
+        public void tearDown() throws IOException {
+            fakeFtpServer.stop();
+        }
 
-        try (var ftpClient = FtpClient.getClient("localhost")) {
-            try (var out = new BufferedOutputStream(new FileOutputStream
-                    (localDir.resolve(longFilePath.getFileName()).toFile()))) {
+        @Nested
+        @DisplayName("When there is a directory with files available")
+        class directoryWithFiles {
 
-                ftpClient.downloadFile(longFilePath, out);
+            @Test
+            @DisplayName("Then we can list all files in the directory")
+            public void givenRemoteDir_whenListingFiles_thenItIsContainedInTheList() throws IOException {
+
+                try (var ftpClient = FtpClient.getClient("localhost", new FTPClient())) {
+                    List<FTPFile> files = ftpClient.listFiles(Path.of
+                            ("/pub/databases/opentargets/platform/21.11/output/etl/json/diseases/"));
+
+                    assertAll("Test to list and retrieve a single file"
+                            , () -> assertTrue(1 == files.size(), () -> "Number of files int he dir is 1!")
+                            , () -> assertEquals(longFilePath.getFileName().toString(), files.get(0).getName()));
+                }
             }
 
-            assertTrue(Files.readAllLines(localDir.resolve(longFilePath.getFileName())).stream()
-                            .collect(Collectors.joining()).startsWith(longFileContent)
-                    , () -> "Content of downloaded file has to mach the pre-defined string.");
-        }
-    }
 
+            @Test
+            @DisplayName("Then we can download content of a specific file")
+            public void givenRemoteFile_whenDownload_thenContentIsAvailableAsStream(@TempDir Path localDir) throws IOException {
 
-    @Test
-    @DisplayName("Check if we get a positive reply after connecting to the server.")
-    public void givenNewlyConnectedFtpClient_whenCheckingLastReply_then221Connected() throws IOException {
-        int loggedInProceedCode = 230;
+                try (var ftpClient = FtpClient.getClient("localhost", new FTPClient())) {
+                    try (var out = new BufferedOutputStream(new FileOutputStream
+                            (localDir.resolve(longFilePath.getFileName()).toFile()))) {
 
-        try (var client = FtpClient.getClient("localhost")) {
+                        ftpClient.downloadFile(longFilePath, out);
+                    }
 
-            assertTrue(loggedInProceedCode == client.getReplyCode()
-                    , () -> "FTP server should return code 230 after connect/login.");
-        }
-    }
-
-
-    @Test
-    @DisplayName("Check how the client reacts to the wrong user not being logged in.")
-    public void givenNewlyCreatedFTPClient_whenBadUserName_then530Error() throws IOException {
-        String badUserName = "nonympus";
-        int notLoggedInUserFTPCode = 530;
-
-        try(var newClient = FtpClient.getClient
-                ("localhost",fakeFtpServer.getServerControlPort(), badUserName, "" )) {
-
-            // try tp list files while not logged in
-            newClient.listFiles(Path.of("/"));
-
-            assertTrue(notLoggedInUserFTPCode == newClient.getReplyCode()
-                    , () -> "FTP server should return code 530 for not logged in users.");
-        }
-    }
-
-
-    @Test
-    @DisplayName("Check how the client reacts to a negative server code from at connect.")
-    public void givenNewlyCreatedFTPClient_whenBadResponseOnConnect_thenException() throws IOException {
-
-        // change response to the next Connect request
-        ConnectCommandHandler handler = (ConnectCommandHandler)fakeFtpServer.getCommandHandler("Connect");
-        handler.setReplyCode(534);
-        handler.setReplyMessageKey("Request denied for policy reasons.");
-        handler.setReplyText("Request denied for policy reasons.");
-
-        // test connect() method
-        assertThrows(IOException.class
-                , () -> FtpClient.getClient("localhost", fakeFtpServer.getServerControlPort(), "anonymous", "")
-                , () -> "Return code 534 (not a positive completion) should cause an IOException");
-    }
-
-
-    @Test
-    @DisplayName("Check the client (in verbose mode) properly closes connection to the server. ")
-    public void givenNewlyCreatedFTPClientVerbose_whenClose_thenItDisconnects() throws IOException {
-        FtpClient clientRef;
-
-        try (var newClient = FtpClient.getClient
-                ("localhost", FtpClient.ATTRIBUTES.VERBOSE)) {
-            clientRef = newClient;
+                    assertTrue(Files.readAllLines(localDir.resolve(longFilePath.getFileName())).stream()
+                                    .collect(Collectors.joining()).startsWith(longFileContent)
+                            , () -> "Content of downloaded file has to mach the pre-defined string.");
+                }
+            }
         }
 
-        assertFalse(clientRef.isConnected()
-                , () -> "FTP server should be disconnected after close() call.");
+
+        @Nested
+        @DisplayName("When we connect and login successfully")
+        class connectedSuccessfully {
+
+            @Test
+            @DisplayName("Then we get a positive reply (230) from the server.")
+            public void givenNewlyConnectedFtpClient_whenCheckingLastReply_then221Connected() throws IOException {
+                int loggedInProceedCode = 230;
+
+                try (var client = FtpClient.getClient("localhost", new FTPClient())) {
+
+                    assertTrue(loggedInProceedCode == client.getReplyCode()
+                            , () -> "FTP server should return code 230 after connect/login.");
+                }
+            }
+
+            @Test
+            @DisplayName("Then we can properly close connection after client is done")
+            public void givenNewlyCreatedFTPClientVerbose_whenClose_thenItDisconnects() throws IOException {
+                FtpClient clientRef;
+
+                try (var newClient = FtpClient.getClient("localhost", new FTPClient())) {
+                    clientRef = newClient;
+                }
+
+                assertFalse(clientRef.isConnected()
+                        , () -> "FTP server should be disconnected after close() call.");
+            }
+        }
+
+
+        @Nested
+        @DisplayName("When we login with a wrong user or password")
+        class loginIsRefused {
+
+            @Test
+            @DisplayName("Then the client throws Unable to connect... exception")
+            public void givenNewlyCreatedFTPClient_whenBadUserName_thenException() throws IOException {
+                String badUserName = "nonympus";
+                int notLoggedInUserFTPCode = 530;
+
+                // test connect() method
+                Throwable exception = assertThrows(IOException.class
+                        , () -> FtpClient.getClient("localhost", new FTPClient(), fakeFtpServer.getServerControlPort(), badUserName, "")
+                        , () -> "Return code 501 (Syntax error...) should cause an IOException");
+
+                assertTrue(exception.getMessage().startsWith("Unable to login")
+                        , () -> "FtpClient should throw an exception with Unable to login message in case of a negative login reply");
+            }
+        }
+
+
+        @Nested
+        @DisplayName("When server refuses our attempt to connect")
+        class connectionIsRefused {
+
+            @BeforeEach
+            public void setUp() {
+                // change response to the next Connect request
+                ConnectCommandHandler handler = (ConnectCommandHandler) fakeFtpServer.getCommandHandler("Connect");
+                handler.setReplyCode(534);
+                handler.setReplyMessageKey("Request denied for policy reasons.");
+                handler.setReplyText("Request denied for policy reasons.");
+            }
+
+            @Test
+            @DisplayName("Then the client throws Unable to connect... exception")
+            public void givenNewlyCreatedFTPClient_whenBadResponseOnConnect_thenException() throws IOException {
+
+                // test connect() method
+                Throwable exception = assertThrows(IOException.class
+                        , () -> FtpClient.getClient("localhost", new FTPClient(), fakeFtpServer.getServerControlPort(), "anonymous", "")
+                        , () -> "Return code 534 (not a positive completion) should cause an IOException");
+
+                assertTrue(exception.getMessage().startsWith("Unable to connect")
+                        , () -> "FtpClient should throw an exception with Unable to connect message in case of a negative connect reply");
+            }
+
+            @AfterEach
+            public void resetServer() {
+                // this is not strictly necessary
+                // but will help avoid errors if we switch
+                // to a single FTP server for all tests
+                fakeFtpServer.setCommandHandler("Connect", new ConnectCommandHandler());
+            }
+        }
     }
 }
