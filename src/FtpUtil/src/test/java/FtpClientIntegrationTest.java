@@ -3,8 +3,6 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockftpserver.core.NotLoggedInException;
-import org.mockftpserver.core.command.CommandHandler;
 import org.mockftpserver.core.command.ConnectCommandHandler;
 import org.mockftpserver.fake.FakeFtpServer;
 import org.mockftpserver.fake.UserAccount;
@@ -13,13 +11,13 @@ import org.mockftpserver.fake.filesystem.FileEntry;
 import org.mockftpserver.fake.filesystem.UnixFakeFileSystem;
 import org.mockftpserver.fake.filesystem.FileSystem;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,10 +25,10 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FtpClientIntegrationTest {
     private FakeFtpServer fakeFtpServer;
 
-    private Path longFilePath = Path.of
+    private final Path longFilePath = Path.of
             ("/pub/databases/opentargets/platform/21.11/output/" +
             "etl/json/diseases/part-00000-773deead-54e9-4934-b648-b26a4bbed763-c000.json");
-    private String longFileContent = "{\"id\":\"HP_0000031\",\"code\":\"http://purl.obolibrary.org/obo/HP_0000031\",\"dbXRefs\":" +
+    private final String longFileContent = "{\"id\":\"HP_0000031\",\"code\":\"http://purl.obolibrary.org/obo/HP_0000031\",\"dbXRefs\":" +
             "[\"UMLS:C0014534\",\"SNOMEDCT_US:31070006\",\"MSH:D004823\"],\"description\":" +
             "\"The presence of inflammation of the epididymis.\",\"name\":\"Epididymitis\",\"parents\":" +
             "[\"HP_0012649\",\"HP_0000022\"],\"ancestors\":" +
@@ -45,7 +43,7 @@ public class FtpClientIntegrationTest {
     class ftpServer {
 
         @BeforeEach
-        public void setUp() throws IOException {
+        public void setUp() {
             fakeFtpServer = new FakeFtpServer();
 
             // setup default account
@@ -65,7 +63,7 @@ public class FtpClientIntegrationTest {
             fileSystem.add(new FileEntry(longFilePath.toString(), longFileContent));
 
             fakeFtpServer.setFileSystem(fileSystem);
-            ;
+
             fakeFtpServer.setSystemName("Unix");
 
             fakeFtpServer.start();
@@ -75,7 +73,7 @@ public class FtpClientIntegrationTest {
 
 
         @AfterEach
-        public void tearDown() throws IOException {
+        public void tearDown() {
             fakeFtpServer.stop();
         }
 
@@ -100,7 +98,8 @@ public class FtpClientIntegrationTest {
 
             @Test
             @DisplayName("Then we can download content of a specific file")
-            public void givenRemoteFile_whenDownload_thenContentIsAvailableAsStream(@TempDir Path localDir) throws IOException {
+            public void givenRemoteFile_whenDownload_thenContentIsAvailableAsStream
+                    (@TempDir Path localDir) throws IOException {
 
                 try (var ftpClient = FtpClient.getClient("localhost", new FTPClient())) {
                     try (var out = new BufferedOutputStream(new FileOutputStream
@@ -114,6 +113,36 @@ public class FtpClientIntegrationTest {
                             , () -> "Content of downloaded file has to mach the pre-defined string.");
                 }
             }
+
+            @Test
+            @DisplayName("Then we can download all files from a specific directory")
+            public void givenRemoteDir_whenDownloadAll_thenContentCopiedIntoStreams
+                    (@TempDir Path localDir) throws IOException {
+
+                Function<Path, OutputStream> outputProvider =
+                        file -> {
+                            try {
+                                return new BufferedOutputStream(
+                                        new FileOutputStream
+                                                (localDir.resolve(file).toFile()));
+                            } catch (FileNotFoundException e) {
+                                throw new RuntimeException(e);
+                            }
+                        };
+
+                Consumer<String> downloadProgressEvent = message -> {};
+
+                try (var ftpClient = FtpClient.getClient
+                        ("localhost", new FTPClient())) {
+
+                    ftpClient.downloadAllFiles
+                            (longFilePath.getParent(), outputProvider, downloadProgressEvent);
+
+                    assertTrue(Files.exists
+                                    (localDir.resolve(longFilePath.getFileName()))
+                            , () -> "A single pre-defined file should be downloaded");
+                }
+            }
         }
 
 
@@ -123,9 +152,8 @@ public class FtpClientIntegrationTest {
 
             @Test
             @DisplayName("Then the client throws Unable to login... exception")
-            public void givenNewlyCreatedFTPClient_whenBadUserName_thenException() throws IOException {
+            public void givenNewlyCreatedFTPClient_whenBadUserName_thenException() {
                 String badUserName = "nonympus";
-                int notLoggedInUserFTPCode = 530;
 
                 // test connect() method
                 Throwable exception = assertThrows(IOException.class
@@ -153,7 +181,7 @@ public class FtpClientIntegrationTest {
 
             @Test
             @DisplayName("Then the client throws Unable to connect... exception")
-            public void givenNewlyCreatedFTPClient_whenBadResponseOnConnect_thenException() throws IOException {
+            public void givenNewlyCreatedFTPClient_whenBadResponseOnConnect_thenException() {
 
                 // test connect() method
                 Throwable exception = assertThrows(IOException.class

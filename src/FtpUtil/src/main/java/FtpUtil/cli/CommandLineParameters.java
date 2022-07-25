@@ -11,7 +11,52 @@ public class CommandLineParameters {
     private Path localBase;
     private Path dir;
 
-    private Options options;
+    Option serverURI = Option.builder()
+            .option("s")
+            .longOpt("server")
+            .argName("ftp_address")
+            .required()
+            .hasArg()
+            .desc("remote ftp server uri")
+            .build();
+
+    Option remoteBaseOp = Option.builder()
+            .option("r")
+            .longOpt("remotedir")
+            .argName("remote_dir")
+            .required()
+            .hasArg()
+            .desc("remote base directory")
+            .build();
+
+    Option localBaseOp = Option.builder()
+            .option("l")
+            .longOpt("localdir")
+            .argName("local_dir")
+            .required()
+            .hasArg()
+            .desc("local base directory")
+            .build();
+
+    Option dirOp = Option.builder()
+            .option("d")
+            .longOpt("dir")
+            .argName("dir")
+            .required()
+            .hasArg()
+            .desc("directory to download files from (relative to remotedir) and to (relative to localdir)")
+            .build();
+
+    // define options
+
+    private final Options options = new Options();
+
+    {
+        options.addOption(serverURI);
+        options.addOption(remoteBaseOp);
+        options.addOption(localBaseOp);
+        options.addOption(dirOp);
+    }
 
     public URI getServer() {
         return server;
@@ -30,52 +75,6 @@ public class CommandLineParameters {
     }
 
     public void parse(String... args) throws ParseException {
-
-        // define options
-
-        options = new Options();
-
-        Option serverURI = Option.builder()
-                .option("s")
-                .longOpt("server")
-                .argName("ftp_address")
-                .required()
-                .hasArg()
-                .desc("remote ftp server uri")
-                .build();
-
-        Option remoteBaseOp = Option.builder()
-                .option("r")
-                .longOpt("remotedir")
-                .argName("remote_dir")
-                .required()
-                .hasArg()
-                .desc("remote base directory")
-                .build();
-
-        Option localBaseOp = Option.builder()
-                .option("l")
-                .longOpt("localdir")
-                .argName("local_dir")
-                .required()
-                .hasArg()
-                .desc("local base directory")
-                .build();
-
-        Option dirOp = Option.builder()
-                .option("d")
-                .longOpt("dir")
-                .argName("dir")
-                .required()
-                .hasArg()
-                .desc("directory to download files from (relative to remotedir) and to (relative to localdir)")
-                .build();
-
-        options.addOption(serverURI);
-        options.addOption(remoteBaseOp);
-        options.addOption(localBaseOp);
-        options.addOption(dirOp);
-
         // parse the command line
 
         CommandLineParser parser = new DefaultParser();
@@ -94,6 +93,13 @@ public class CommandLineParameters {
         dir = Path.of(line.getOptionValue(dirOp));
 
         //throw new ParseException("test");
+    }
+
+    public void printReport() {
+        System.out.println("\tServer: [" + this.getServer() + "]");
+        System.out.println("\tRemote: [" + this.getRemoteBase() + "]");
+        System.out.println("\tLocal:  [" + this.getLocalBase() + "]");
+        System.out.println("\tDir:    [" + this.getDir() + "]");
     }
 
     public void printHelp() {

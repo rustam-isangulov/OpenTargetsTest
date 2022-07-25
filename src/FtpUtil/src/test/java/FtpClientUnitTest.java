@@ -9,12 +9,11 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -84,6 +83,40 @@ public class FtpClientUnitTest {
             , () -> assertEquals(1, list.size())
             , () -> assertTrue(list.get(0).getName().equals("fileOne.txt")
                             , () -> "File name should match the expected one"));
+        }
+
+        @Test
+        @DisplayName("Test downloadAllFiles from a directory")
+        public void testFTPDownloadAllFiles() throws IOException {
+            FTPFile[] ftpFiles = new FTPFile[1];
+            ftpFiles[0] = new FTPFile();
+            ftpFiles[0].setName("fileOne.txt");
+            ftpFiles[0].setType(FTPFile.FILE_TYPE);
+
+            // mock FTPClient response for the list command
+            when(mockFTPClient.listFiles(anyString()))
+                    .thenReturn(ftpFiles);
+
+            // create a simple progress reporter
+            Consumer<String> progressReporter = mock(Consumer.class);
+            // create a simple output stream
+            OutputStream out = mock(OutputStream.class);
+            // create a simple output provider
+            Function<Path, OutputStream> outputProvider = mock(Function.class);
+            when(outputProvider.apply(any(Path.class))).thenReturn(out);
+
+            client.downloadAllFiles
+                    (Path.of("/remote/path"), outputProvider, progressReporter);
+
+            // check the download sequence
+            // get a list
+            verify(mockFTPClient).listFiles("/remote/path");
+            // say "I am downloading ..."
+            verify(progressReporter).accept("Downloading (1 of 1):[fileOne.txt]");
+            // get output stream to write to
+            verify(outputProvider).apply(Path.of("fileOne.txt"));
+            // check is the stream is closed after writing content
+            verify(mockFTPClient).retrieveFile("/remote/path/fileOne.txt", out);
         }
 
         @Test
