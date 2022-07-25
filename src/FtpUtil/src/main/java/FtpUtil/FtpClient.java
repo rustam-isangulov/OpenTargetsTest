@@ -15,7 +15,6 @@ public class FtpClient implements Closeable {
     private final FTPClient ftp;
     private final String server;
 
-
     public static FtpClient getClient(String serverAddress, FTPClient ftp) throws IOException {
         // default port
         int port = 21;
@@ -31,17 +30,13 @@ public class FtpClient implements Closeable {
         return client;
     }
 
-    public static FtpClient getClient(String server, FTPClient ftp, int port, String user, String password) throws IOException {
-        FtpClient client = new FtpClient(server, ftp);
+    public static FtpClient getClient(String serverAddress, FTPClient ftp
+            , int port, String user, String password) throws IOException {
+        FtpClient client = new FtpClient(serverAddress, ftp);
 
         client.open(port, user, password);
 
         return client;
-    }
-
-    public FtpClient(String serverAddress, FTPClient ftp) {
-        this.server = serverAddress;
-        this.ftp = ftp;
     }
 
     public List<FTPFile> listFiles(Path path) throws IOException {
@@ -51,16 +46,7 @@ public class FtpClient implements Closeable {
     }
 
     public void downloadFile(Path remoteFile, OutputStream out) throws IOException {
-
         ftp.retrieveFile(remoteFile.toString(), out);
-    }
-
-    public int getReplyCode() throws IOException {
-        return ftp.getReplyCode();
-    }
-
-    public boolean isConnected() throws IOException {
-        return ftp.isConnected();
     }
 
     @Override
@@ -69,7 +55,12 @@ public class FtpClient implements Closeable {
         ftp.disconnect();
     }
 
-    private FtpClient open(int port, String user, String password) throws IOException {
+    private FtpClient(String serverAddress, FTPClient ftp) {
+        this.server = serverAddress;
+        this.ftp = ftp;
+    }
+
+    private void open(int port, String user, String password) throws IOException {
         // connect
         ftp.connect(server, port);
 
@@ -81,11 +72,8 @@ public class FtpClient implements Closeable {
                     + " port: " + port);
         }
 
-        // login
-        ftp.login(user, password);
-
-        // check for connection failures
-        if (!FTPReply.isPositiveCompletion(ftp.getReplyCode())) {
+        // check for login failures
+        if (!ftp.login(user, password)) {
             ftp.disconnect();
             throw new IOException
                     ("Unable to login to FTP Server: " + server
@@ -96,6 +84,5 @@ public class FtpClient implements Closeable {
         ftp.enterLocalPassiveMode();
 
         // now ready to access files and dirs
-        return this;
     }
 }

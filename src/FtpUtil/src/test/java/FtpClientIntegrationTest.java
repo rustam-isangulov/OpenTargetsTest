@@ -41,7 +41,7 @@ public class FtpClientIntegrationTest {
 
 
     @Nested
-    @DisplayName("Given there is an FTP server")
+    @DisplayName("Given an FTP server with directories and files")
     class ftpServer {
 
         @BeforeEach
@@ -80,7 +80,7 @@ public class FtpClientIntegrationTest {
         }
 
         @Nested
-        @DisplayName("When there is a directory with files available")
+        @DisplayName("When we connected and logged in")
         class directoryWithFiles {
 
             @Test
@@ -92,7 +92,7 @@ public class FtpClientIntegrationTest {
                             ("/pub/databases/opentargets/platform/21.11/output/etl/json/diseases/"));
 
                     assertAll("Test to list and retrieve a single file"
-                            , () -> assertTrue(1 == files.size(), () -> "Number of files int he dir is 1!")
+                            , () -> assertTrue(1 == files.size(), () -> "Number of files int the dir is 1!")
                             , () -> assertEquals(longFilePath.getFileName().toString(), files.get(0).getName()));
                 }
             }
@@ -118,42 +118,11 @@ public class FtpClientIntegrationTest {
 
 
         @Nested
-        @DisplayName("When we connect and login successfully")
-        class connectedSuccessfully {
-
-            @Test
-            @DisplayName("Then we get a positive reply (230) from the server.")
-            public void givenNewlyConnectedFtpClient_whenCheckingLastReply_then221Connected() throws IOException {
-                int loggedInProceedCode = 230;
-
-                try (var client = FtpClient.getClient("localhost", new FTPClient())) {
-
-                    assertTrue(loggedInProceedCode == client.getReplyCode()
-                            , () -> "FTP server should return code 230 after connect/login.");
-                }
-            }
-
-            @Test
-            @DisplayName("Then we can properly close connection after client is done")
-            public void givenNewlyCreatedFTPClientVerbose_whenClose_thenItDisconnects() throws IOException {
-                FtpClient clientRef;
-
-                try (var newClient = FtpClient.getClient("localhost", new FTPClient())) {
-                    clientRef = newClient;
-                }
-
-                assertFalse(clientRef.isConnected()
-                        , () -> "FTP server should be disconnected after close() call.");
-            }
-        }
-
-
-        @Nested
         @DisplayName("When we login with a wrong user or password")
         class loginIsRefused {
 
             @Test
-            @DisplayName("Then the client throws Unable to connect... exception")
+            @DisplayName("Then the client throws Unable to login... exception")
             public void givenNewlyCreatedFTPClient_whenBadUserName_thenException() throws IOException {
                 String badUserName = "nonympus";
                 int notLoggedInUserFTPCode = 530;
