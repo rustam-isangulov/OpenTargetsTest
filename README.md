@@ -56,30 +56,26 @@ java -jar bin/overallscore.jar -e "./data/evidence/sourceId=eva/" -t "./data/tar
 
 ```shell
 Proceeding with the following parameters
-	Evidence path: [./data/evidence/sourceId=eva]
-	Targets path: [./data/targets]
-	Diseases path: [./data/diseases]
-	Output path: [./output]
+	Evidence path: [../data/evidence/sourceId=eva]
+	Targets path: [../data/targets]
+	Diseases path: [../data/diseases]
+	Output path: [../output]
 	Min number of shared connections: [2]
+	Number of top scores: [3]
 
-Start processing evidence data...
-Total elapsed time for the evidence data processing: 2559 (ms)
+Elapsed time for extracting evidence map and process scores: 2691 (ms)
 Number of target-disease overall association scores: 25132
 
-Start processing target data...
-Total elapsed time for the target data processing: 1879 (ms)
+Elapsed time for extracting targets: 1974 (ms)
 Number of targets: 60636
 
-Start processing disease data...
-Total elapsed time for the disease data processing: 112 (ms)
+Elapsed time for extracting diseases: 104 (ms)
 Number of diseases: 18706
 
-Start processing joint Association/Target/Disease data set...
-Total elapsed time for the joint Association/Target/Disease data set processing: 141 (ms)
+Elapsed time for generating joint Association/Target/Disease data set: 186 (ms)
 Number of overall association scores: 25132
 
-Start processing targets with shared disease connections...
-Total elapsed time for the targets with shared disease connections processing: 958 (ms)
+Elapsed time for searching for targets with shared disease connections: 976 (ms)
 Number of target-target pairs with at least 2 shared connections: 350414
 ```
 </p>
