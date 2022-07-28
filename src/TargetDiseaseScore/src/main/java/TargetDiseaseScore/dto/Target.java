@@ -26,4 +26,9 @@ public class Target {
     public void setApprovedSymbol(String approvedSymbol) {
         this.approvedSymbol = approvedSymbol;
     }
+
+    @Override
+    public String toString() {
+        return String.format("targetId: %s approvedSymbol: %s", id, approvedSymbol);
+    }
 }

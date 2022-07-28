@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InOrder;
-import org.mockito.Mock;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -23,7 +22,7 @@ public class FtpClientUnitTest {
     @Nested
     @DisplayName("When open default ftp connection is successful")
     public class openIfSuccessful {
-        private FTPClient mockFTPClient = mock(FTPClient.class);
+        private final FTPClient mockFTPClient = mock(FTPClient.class);
 
         private FtpClient client;
 

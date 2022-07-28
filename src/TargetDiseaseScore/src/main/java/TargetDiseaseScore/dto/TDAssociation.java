@@ -21,6 +21,12 @@ public class TDAssociation {
         this.name = name;
     }
 
+    @Override
+    public String toString() {
+        return String.format("targetId = %s, diseaseId = %s, median = %.2f, top3 = %s, approvedSymbol = %s, name = [%s]"
+                , targetId, diseaseId, median, top3.toString(), approvedSymbol, name);
+    }
+
     public String getTargetId() {
         return targetId;
     }

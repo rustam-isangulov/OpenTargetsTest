@@ -1,9 +1,18 @@
 package TargetDiseaseScore.dto;
 
 public class TDEvidence {
+
     private String targetId;
     private String diseaseId;
     private double score;
+
+    public TDEvidence() {}
+
+    public TDEvidence(String targetId, String diseaseId, double score) {
+        this.targetId = targetId;
+        this.diseaseId = diseaseId;
+        this.score = score;
+    }
 
     public String getTargetId() {
         return targetId;

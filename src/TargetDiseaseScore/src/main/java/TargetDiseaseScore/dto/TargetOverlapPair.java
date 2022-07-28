@@ -5,7 +5,7 @@ import java.util.Set;
 public class TargetOverlapPair {
     private String targetIdA;
     private String targetIdB;
-    private Set<String> diseasesShared;
+    private final Set<String> diseasesShared;
 
     public TargetOverlapPair(String targetIdA, String targetIdB, Set<String> diseasesShared){
         this.targetIdA = targetIdA;
@@ -19,6 +19,10 @@ public class TargetOverlapPair {
 
     public String getTargetIdB() {
         return targetIdB;
+    }
+
+    public Set<String> getDiseasesShared() {
+        return diseasesShared;
     }
 
     public String toString() {

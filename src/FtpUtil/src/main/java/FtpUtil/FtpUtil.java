@@ -18,21 +18,15 @@ public class FtpUtil {
         var clp = new CommandLineParameters();
 
         try {
-            //
             // understand user defined options
-            //
             clp.parse(args);
 
-            //
             // ready to go
-            //
             System.out.println();
             System.out.println("Proceeding with the following parameters");
             clp.printReport();
 
-            //
             // prepare necessary directory structure
-            //
             Files.createDirectories(clp.getLocalBase().resolve(clp.getDir()));
 
         } catch (ParseException ex) {
@@ -58,8 +52,11 @@ public class FtpUtil {
         //
         // create a new runner with all required info
         //
-        FtpUtil utilityRunner = new FtpUtil(clp.getServer()
-                , clp.getRemoteBase(), clp.getDir(), clp.getLocalBase());
+        FtpUtil utilityRunner = new FtpUtil
+                (clp.getServer()
+                        , clp.getRemoteBase()
+                        , clp.getDir()
+                        , clp.getLocalBase());
 
         //
         // run the job

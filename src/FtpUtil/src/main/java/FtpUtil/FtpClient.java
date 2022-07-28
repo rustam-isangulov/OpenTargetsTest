@@ -59,14 +59,15 @@ public class FtpClient implements Closeable {
 
         var filesList = Arrays.stream(files)
                 .filter(FTPFile::isFile)
+                .map(FTPFile::getName)
                 .collect(Collectors.toList());
 
         for(int i = 0; i < filesList.size(); i++) {
             downloadProgressReporter.accept(String.format
-                    ("Downloading (%d of %d):[%s]", i+1, filesList.size(), filesList.get(i).getName()));
+                    ("Downloading (%d of %d):[%s]", i+1, filesList.size(), filesList.get(i)));
 
-            try (var out = outputProvider.apply(Path.of(filesList.get(i).getName()))) {
-                ftp.retrieveFile(remoteDir.resolve(filesList.get(i).getName()).toString(), out);
+            try (var out = outputProvider.apply(Path.of(filesList.get(i)))) {
+                ftp.retrieveFile(remoteDir.resolve(filesList.get(i)).toString(), out);
             }
         }
     }

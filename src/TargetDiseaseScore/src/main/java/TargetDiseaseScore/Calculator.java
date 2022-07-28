@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 
 public class Calculator {
+    private Calculator() {}
+
     static double median(double[] l) {
         if (l == null)
             throw new IllegalArgumentException("Attempt to calculate median value on a null list");

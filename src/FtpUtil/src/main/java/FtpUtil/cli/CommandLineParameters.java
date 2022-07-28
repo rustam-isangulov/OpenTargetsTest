@@ -11,7 +11,7 @@ public class CommandLineParameters {
     private Path localBase;
     private Path dir;
 
-    Option serverURI = Option.builder()
+    private final Option serverURI = Option.builder()
             .option("s")
             .longOpt("server")
             .argName("ftp_address")
@@ -20,7 +20,7 @@ public class CommandLineParameters {
             .desc("remote ftp server uri")
             .build();
 
-    Option remoteBaseOp = Option.builder()
+    private final Option remoteBaseOp = Option.builder()
             .option("r")
             .longOpt("remotedir")
             .argName("remote_dir")
@@ -29,7 +29,7 @@ public class CommandLineParameters {
             .desc("remote base directory")
             .build();
 
-    Option localBaseOp = Option.builder()
+    private final Option localBaseOp = Option.builder()
             .option("l")
             .longOpt("localdir")
             .argName("local_dir")
@@ -38,7 +38,7 @@ public class CommandLineParameters {
             .desc("local base directory")
             .build();
 
-    Option dirOp = Option.builder()
+    private final Option dirOp = Option.builder()
             .option("d")
             .longOpt("dir")
             .argName("dir")
