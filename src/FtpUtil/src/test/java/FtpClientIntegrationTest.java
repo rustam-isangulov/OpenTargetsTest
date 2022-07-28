@@ -142,6 +142,7 @@ public class FtpClientIntegrationTest {
                                     (localDir.resolve(longFilePath.getFileName()))
                             , () -> "A single pre-defined file should be downloaded");
                 }
+
             }
         }
 
