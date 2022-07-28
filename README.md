@@ -111,27 +111,32 @@ Example:
 
 ```shell
 usage: java -jar overallscore.jar -d <diseases_dir> -e <evidence_dir> -o
-       <output_dir> [-sn <number>] -t <targets_dir>
+       <output_dir> [-sn <number>] -t <targets_dir> [-ts
+       <number_top_scores>]
 
 Generate the overall association scores for given target-disease
 associations and Calculate the number of target-target pairs that share a
 connection to a specified number of diseases.
 
 Options:
- -d,--diseases <diseases_dir>   directory that contains diseases *.json
-                                files
- -e,--evidence <evidence_dir>   directory that contains evidence *.json
-                                files
- -o,--output <output_dir>       directory for the overall association
-                                scores output *.json file
- -sn,--sharednumber <number>    min number of shared diseases for
-                                target-target shared connection statistics
- -t,--targets <targets_dir>     directory that contains targets *.json
-                                files
+ -d,--diseases <diseases_dir>          directory that contains diseases
+                                       *.json files
+ -e,--evidence <evidence_dir>          directory that contains evidence
+                                       *.json files
+ -o,--output <output_dir>              directory for the overall
+                                       association scores output *.json
+                                       file
+ -sn,--sharednumber <number>           min number of shared diseases for
+                                       target-target shared connection
+                                       statistics
+ -t,--targets <targets_dir>            directory that contains targets
+                                       *.json files
+ -ts,--topscores <number_top_scores>   number of top scores for overall
+                                       statistics
 
 Example:
  java -jar overallscore.jar -e "./evidence/sourceId=eva/" -t "./targets/"
--d "./diseases/" -o "./output/" -sn 2
+-d "./diseases/" -o "./output/" -sn 2 -ts 3
 ```
 
 ---

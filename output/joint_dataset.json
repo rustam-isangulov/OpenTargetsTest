@@ -7037,8 +7037,8 @@
 {"targetId":"ENSG00000132510","diseaseId":"HP_0001250","median":0.32,"top3":[0.32],"approvedSymbol":"KDM6B","name":"Seizure"}
 {"targetId":"ENSG00000170100","diseaseId":"HP_0000252","median":0.32,"top3":[0.32],"approvedSymbol":"ZNF778","name":"Microcephaly"}
 {"targetId":"ENSG00000008710","diseaseId":"HP_0001684","median":0.32,"top3":[0.32],"approvedSymbol":"PKD1","name":"Secundum atrial septal defect"}
-{"targetId":"ENSG00000134086","diseaseId":"Orphanet_140162","median":0.32,"top3":[0.95,0.92,0.92],"approvedSymbol":"VHL","name":"Inherited cancer-predisposing syndrome"}
 {"targetId":"ENSG00000197496","diseaseId":"HP_0001626","median":0.32,"top3":[0.92,0.92,0.92],"approvedSymbol":"SLC2A10","name":"Abnormality of the cardiovascular system"}
+{"targetId":"ENSG00000134086","diseaseId":"Orphanet_140162","median":0.32,"top3":[0.95,0.92,0.92],"approvedSymbol":"VHL","name":"Inherited cancer-predisposing syndrome"}
 {"targetId":"ENSG00000077942","diseaseId":"Orphanet_994","median":0.32,"top3":[0.32],"approvedSymbol":"FBLN1","name":"Fetal akinesia deformation sequence"}
 {"targetId":"ENSG00000114698","diseaseId":"EFO_1001176","median":0.32,"top3":[0.32],"approvedSymbol":"PLSCR4","name":"sensorineural hearing loss"}
 {"targetId":"ENSG00000135443","diseaseId":"Orphanet_69084","median":0.32,"top3":[0.9,0.32,0.02],"approvedSymbol":"KRT85","name":"Pure hair and nail ectodermal dysplasia"}
@@ -7080,8 +7080,8 @@
 {"targetId":"ENSG00000187908","diseaseId":"Orphanet_145","median":0.32,"top3":[0.32],"approvedSymbol":"DMBT1","name":"Hereditary breast and ovarian cancer syndrome"}
 {"targetId":"ENSG00000184292","diseaseId":"Orphanet_98957","median":0.32,"top3":[0.9,0.9,0.9],"approvedSymbol":"TACSTD2","name":"Gelatinous drop-like corneal dystrophy"}
 {"targetId":"ENSG00000119333","diseaseId":"Orphanet_474","median":0.32,"top3":[0.92,0.92,0.92],"approvedSymbol":"DYNC2I2","name":"Jeune syndrome"}
-{"targetId":"ENSG00000151929","diseaseId":"EFO_0000407","median":0.32,"top3":[0.95,0.95,0.92],"approvedSymbol":"BAG3","name":"dilated cardiomyopathy"}
 {"targetId":"ENSG00000117984","diseaseId":"Orphanet_216","median":0.32,"top3":[0.9,0.9,0.9],"approvedSymbol":"CTSD","name":"Neuronal ceroid lipofuscinosis"}
+{"targetId":"ENSG00000151929","diseaseId":"EFO_0000407","median":0.32,"top3":[0.95,0.95,0.92],"approvedSymbol":"BAG3","name":"dilated cardiomyopathy"}
 {"targetId":"ENSG00000277161","diseaseId":"Orphanet_247262","median":0.32,"top3":[0.9,0.9,0.9],"approvedSymbol":"PIGW","name":"Hyperphosphatasia-intellectual disability syndrome"}
 {"targetId":"ENSG00000175084","diseaseId":"Orphanet_99739","median":0.32,"top3":[0.7,0.32,0.32],"approvedSymbol":"DES","name":"Rare familial disorder with hypertrophic cardiomyopathy"}
 {"targetId":"ENSG00000105397","diseaseId":"Orphanet_179006","median":0.32,"top3":[0.32,0.32],"approvedSymbol":"TYK2","name":"Primary immunodeficiency due to a defect in adaptive immunity"}
@@ -7165,8 +7165,8 @@
 {"targetId":"ENSG00000105722","diseaseId":"EFO_0004244","median":0.32,"top3":[0.32],"approvedSymbol":"ERF","name":"interstitial lung disease"}
 {"targetId":"ENSG00000117601","diseaseId":"Orphanet_82","median":0.32,"top3":[0.95,0.95,0.95],"approvedSymbol":"SERPINC1","name":"Hereditary thrombophilia due to congenital antithrombin deficiency"}
 {"targetId":"ENSG00000146872","diseaseId":"EFO_0003758","median":0.32,"top3":[0.32],"approvedSymbol":"TLK2","name":"autism"}
-{"targetId":"ENSG00000144285","diseaseId":"MONDO_0100062","median":0.32,"top3":[0.92,0.92,0.92],"approvedSymbol":"SCN1A","name":"developmental and epileptic encephalopathy"}
 {"targetId":"ENSG00000132915","diseaseId":"Orphanet_791","median":0.32,"top3":[0.92,0.92,0.92],"approvedSymbol":"PDE6A","name":"Retinitis pigmentosa"}
+{"targetId":"ENSG00000144285","diseaseId":"MONDO_0100062","median":0.32,"top3":[0.92,0.92,0.92],"approvedSymbol":"SCN1A","name":"developmental and epileptic encephalopathy"}
 {"targetId":"ENSG00000089597","diseaseId":"EFO_0003086","median":0.32,"top3":[0.92,0.32,0.32],"approvedSymbol":"GANAB","name":"kidney disease"}
 {"targetId":"ENSG00000165506","diseaseId":"Orphanet_244","median":0.32,"top3":[0.92,0.92,0.92],"approvedSymbol":"DNAAF2","name":"Primary ciliary dyskinesia"}
 {"targetId":"ENSG00000129003","diseaseId":"EFO_0000249","median":0.32,"top3":[0.32,0.32],"approvedSymbol":"VPS13C","name":"Alzheimer's disease"}
@@ -7844,8 +7844,8 @@
 {"targetId":"ENSG00000155719","diseaseId":"EFO_0000508","median":0.32,"top3":[0.32,0.32],"approvedSymbol":"OTOA","name":"genetic disorder"}
 {"targetId":"ENSG00000197380","diseaseId":"EFO_0003847","median":0.32,"top3":[0.32],"approvedSymbol":"DACT3","name":"mental retardation"}
 {"targetId":"ENSG00000198523","diseaseId":"EFO_0000538","median":0.32,"top3":[0.92,0.72,0.32],"approvedSymbol":"PLN","name":"hypertrophic cardiomyopathy"}
-{"targetId":"ENSG00000108733","diseaseId":"Orphanet_79189","median":0.32,"top3":[0.95,0.95,0.95],"approvedSymbol":"PEX12","name":"Peroxisome biogenesis disorder-Zellweger syndrome spectrum"}
 {"targetId":"ENSG00000234438","diseaseId":"Orphanet_607","median":0.32,"top3":[0.92,0.9,0.9],"approvedSymbol":"KBTBD13","name":"Nemaline myopathy"}
+{"targetId":"ENSG00000108733","diseaseId":"Orphanet_79189","median":0.32,"top3":[0.95,0.95,0.95],"approvedSymbol":"PEX12","name":"Peroxisome biogenesis disorder-Zellweger syndrome spectrum"}
 {"targetId":"ENSG00000123700","diseaseId":"Orphanet_334","median":0.32,"top3":[0.92,0.72,0.32],"approvedSymbol":"KCNJ2","name":"Familial atrial fibrillation"}
 {"targetId":"ENSG00000165410","diseaseId":"Orphanet_607","median":0.32,"top3":[0.9,0.9,0.32],"approvedSymbol":"CFL2","name":"Nemaline myopathy"}
 {"targetId":"ENSG00000155016","diseaseId":"Orphanet_685","median":0.32,"top3":[0.32],"approvedSymbol":"CYP2U1","name":"Hereditary spastic paraplegia"}
@@ -8959,8 +8959,8 @@
 {"targetId":"ENSG00000101276","diseaseId":"Orphanet_97229","median":0.32,"top3":[0.95,0.92,0.92],"approvedSymbol":"SLC52A3","name":"Riboflavin transporter deficiency"}
 {"targetId":"ENSG00000134086","diseaseId":"MONDO_0007763","median":0.32,"top3":[0.92,0.92,0.72],"approvedSymbol":"VHL","name":"nonpapillary renal cell carcinoma"}
 {"targetId":"ENSG00000112039","diseaseId":"MONDO_0010953","median":0.32,"top3":[0.95,0.95,0.92],"approvedSymbol":"FANCE","name":"Fanconi anemia complementation group E"}
-{"targetId":"ENSG00000175294","diseaseId":"EFO_0004248","median":0.32,"top3":[0.32,0.32,0.32],"approvedSymbol":"CATSPER1","name":"male infertility"}
 {"targetId":"ENSG00000196177","diseaseId":"Orphanet_79157","median":0.32,"top3":[0.95,0.95,0.92],"approvedSymbol":"ACADSB","name":"2-methylbutyryl-CoA dehydrogenase deficiency"}
+{"targetId":"ENSG00000175294","diseaseId":"EFO_0004248","median":0.32,"top3":[0.32,0.32,0.32],"approvedSymbol":"CATSPER1","name":"male infertility"}
 {"targetId":"ENSG00000235718","diseaseId":"MONDO_0004580","median":0.32,"top3":[0.32,0.32,0.32],"approvedSymbol":"MFRP","name":"retinal degeneration"}
 {"targetId":"ENSG00000152669","diseaseId":"Orphanet_244","median":0.32,"top3":[0.95,0.92,0.92],"approvedSymbol":"CCNO","name":"Primary ciliary dyskinesia"}
 {"targetId":"ENSG00000171862","diseaseId":"EFO_0009649","median":0.32,"top3":[0.32],"approvedSymbol":"PTEN","name":"susceptibility to breast cancer"}
@@ -9024,8 +9024,8 @@
 {"targetId":"ENSG00000129991","diseaseId":"EFO_0000318","median":0.32,"top3":[0.95,0.92,0.92],"approvedSymbol":"TNNI3","name":"cardiomyopathy"}
 {"targetId":"ENSG00000142173","diseaseId":"HP_0000011","median":0.32,"top3":[0.32],"approvedSymbol":"COL6A2","name":"Neurogenic bladder"}
 {"targetId":"ENSG00000285947","diseaseId":"Orphanet_231671","median":0.32,"top3":[0.9,0.9,0.9],"approvedSymbol":"ENSG00000285947","name":"Isolated growth hormone deficiency type IB"}
-{"targetId":"ENSG00000184056","diseaseId":"Orphanet_2697","median":0.32,"top3":[0.92,0.92,0.92],"approvedSymbol":"VPS33B","name":"Arthrogryposis - renal dysfunction - cholestasis"}
 {"targetId":"ENSG00000105711","diseaseId":"Orphanet_36387","median":0.32,"top3":[0.95,0.92,0.92],"approvedSymbol":"SCN1B","name":"Generalized epilepsy with febrile seizures-plus"}
+{"targetId":"ENSG00000184056","diseaseId":"Orphanet_2697","median":0.32,"top3":[0.92,0.92,0.92],"approvedSymbol":"VPS33B","name":"Arthrogryposis - renal dysfunction - cholestasis"}
 {"targetId":"ENSG00000122863","diseaseId":"Orphanet_94068","median":0.32,"top3":[0.32,0.32,0.32],"approvedSymbol":"CHST3","name":"Spondyloepiphyseal dysplasia congenita"}
 {"targetId":"ENSG00000132549","diseaseId":"Orphanet_193","median":0.32,"top3":[0.95,0.95,0.95],"approvedSymbol":"VPS13B","name":"Cohen syndrome"}
 {"targetId":"ENSG00000177098","diseaseId":"HP_0001626","median":0.32,"top3":[0.32,0.32,0.32],"approvedSymbol":"SCN4B","name":"Abnormality of the cardiovascular system"}
@@ -10454,8 +10454,8 @@
 {"targetId":"ENSG00000198951","diseaseId":"Orphanet_79280","median":0.32,"top3":[0.95,0.9,0.9],"approvedSymbol":"NAGA","name":"Alpha-N-acetylgalactosaminidase deficiency type 2"}
 {"targetId":"ENSG00000198951","diseaseId":"Orphanet_79281","median":0.32,"top3":[0.95,0.92,0.9],"approvedSymbol":"NAGA","name":"Alpha-N-acetylgalactosaminidase deficiency type 3"}
 {"targetId":"ENSG00000086758","diseaseId":"EFO_0004705","median":0.32,"top3":[0.32],"approvedSymbol":"HUWE1","name":"hypothyroidism"}
-{"targetId":"ENSG00000198951","diseaseId":"Orphanet_79279","median":0.32,"top3":[0.95,0.92,0.9],"approvedSymbol":"NAGA","name":"Alpha-N-acetylgalactosaminidase deficiency type 1"}
 {"targetId":"ENSG00000198707","diseaseId":"Orphanet_3156","median":0.32,"top3":[0.92,0.92,0.92],"approvedSymbol":"CEP290","name":"Senior-Loken syndrome"}
+{"targetId":"ENSG00000198951","diseaseId":"Orphanet_79279","median":0.32,"top3":[0.95,0.92,0.9],"approvedSymbol":"NAGA","name":"Alpha-N-acetylgalactosaminidase deficiency type 1"}
 {"targetId":"ENSG00000102030","diseaseId":"EFO_0003758","median":0.32,"top3":[0.32],"approvedSymbol":"NAA10","name":"autism"}
 {"targetId":"ENSG00000035403","diseaseId":"HP_0001657","median":0.32,"top3":[0.32],"approvedSymbol":"VCL","name":"Prolonged QT interval"}
 {"targetId":"ENSG00000111245","diseaseId":"EFO_0000407","median":0.32,"top3":[0.7,0.7,0.32],"approvedSymbol":"MYL2","name":"dilated cardiomyopathy"}
@@ -12254,8 +12254,8 @@
 {"targetId":"ENSG00000163513","diseaseId":"MONDO_0019821","median":0.32,"top3":[0.32],"approvedSymbol":"TGFBR2","name":"aneurysm or dilatation of ascending aorta"}
 {"targetId":"ENSG00000160789","diseaseId":"Orphanet_166","median":0.32,"top3":[0.92,0.92,0.92],"approvedSymbol":"LMNA","name":"Charcot-Marie-Tooth disease"}
 {"targetId":"ENSG00000125414","diseaseId":"MONDO_0011577","median":0.32,"top3":[0.92,0.92,0.92],"approvedSymbol":"MYH2","name":"myopathy, proximal, and ophthalmoplegia"}
-{"targetId":"ENSG00000122512","diseaseId":"Orphanet_140162","median":0.32,"top3":[0.95,0.95,0.95],"approvedSymbol":"PMS2","name":"Inherited cancer-predisposing syndrome"}
 {"targetId":"ENSG00000151849","diseaseId":"Orphanet_808","median":0.32,"top3":[0.95,0.92,0.92],"approvedSymbol":"CENPJ","name":"Seckel syndrome"}
+{"targetId":"ENSG00000122512","diseaseId":"Orphanet_140162","median":0.32,"top3":[0.95,0.95,0.95],"approvedSymbol":"PMS2","name":"Inherited cancer-predisposing syndrome"}
 {"targetId":"ENSG00000107882","diseaseId":"Orphanet_475","median":0.32,"top3":[0.9,0.9,0.32],"approvedSymbol":"SUFU","name":"Joubert syndrome"}
 {"targetId":"ENSG00000170835","diseaseId":"EFO_0000508","median":0.32,"top3":[0.32],"approvedSymbol":"CEL","name":"genetic disorder"}
 {"targetId":"ENSG00000163536","diseaseId":"Orphanet_85110","median":0.32,"top3":[0.95,0.92,0.9],"approvedSymbol":"SERPINI1","name":"Familial encephalopathy with neuroserpin inclusion bodies"}
