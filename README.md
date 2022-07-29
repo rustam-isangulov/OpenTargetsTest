@@ -1,6 +1,6 @@
 # Open Targets Test
 
-> *The version published on the due date (17 July 2022) has been tagged **v0.1-due-date**. Both projects have been heavily refactored after introduction of unit and intergation tests.*
+> *The version published on the due date (17 July 2022) has been tagged **[v0.1-due-date](https://github.com/rustam-isangulov/OpenTargetsTest/tree/v0.1-due-datex)**. Both projects have been heavily refactored since then with the introduction of unit and integration tests.*
 
 This project is a solution for an Open Targets Developer Technical Test. Objectives for the test are described [here](../main/documents/ebi01989_software_developer_-_take_home_tech_test.pdf).
 
