@@ -1,4 +1,7 @@
 # Open Targets Test
+
+> *The version published on the due date (17 July 2022) has been tagged **[v0.1-due-date](https://github.com/rustam-isangulov/OpenTargetsTest/tree/v0.1-due-date)**. Both projects have been heavily refactored since then with the introduction of unit and integration tests.*
+
 This project is a solution for an Open Targets Developer Technical Test. Objectives for the test are described [here](../main/documents/ebi01989_software_developer_-_take_home_tech_test.pdf).
 
 # Results
@@ -18,6 +21,14 @@ java -version
 openjdk version "11.0.12" 2021-07-20
 OpenJDK Runtime Environment Homebrew (build 11.0.12+0)
 OpenJDK 64-Bit Server VM Homebrew (build 11.0.12+0, mixed mode)
+```
+
+ubuntu:
+```shell
+java -version
+openjdk version "11.0.15" 2022-04-19
+OpenJDK Runtime Environment (build 11.0.15+10-Ubuntu-0ubuntu0.22.04.1)
+OpenJDK 64-Bit Server VM (build 11.0.15+10-Ubuntu-0ubuntu0.22.04.1, mixed mode, sharing)
 ```
 
 ## Steps
@@ -56,30 +67,26 @@ java -jar bin/overallscore.jar -e "./data/evidence/sourceId=eva/" -t "./data/tar
 
 ```shell
 Proceeding with the following parameters
-	Evidence path: [./data/evidence/sourceId=eva]
-	Targets path: [./data/targets]
-	Diseases path: [./data/diseases]
-	Output path: [./output]
+	Evidence path: [../data/evidence/sourceId=eva]
+	Targets path: [../data/targets]
+	Diseases path: [../data/diseases]
+	Output path: [../output]
 	Min number of shared connections: [2]
+	Number of top scores: [3]
 
-Start processing evidence data...
-Total elapsed time for the evidence data processing: 2559 (ms)
+Elapsed time for extracting evidence map and process scores: 2691 (ms)
 Number of target-disease overall association scores: 25132
 
-Start processing target data...
-Total elapsed time for the target data processing: 1879 (ms)
+Elapsed time for extracting targets: 1974 (ms)
 Number of targets: 60636
 
-Start processing disease data...
-Total elapsed time for the disease data processing: 112 (ms)
+Elapsed time for extracting diseases: 104 (ms)
 Number of diseases: 18706
 
-Start processing joint Association/Target/Disease data set...
-Total elapsed time for the joint Association/Target/Disease data set processing: 141 (ms)
+Elapsed time for generating joint Association/Target/Disease data set: 186 (ms)
 Number of overall association scores: 25132
 
-Start processing targets with shared disease connections...
-Total elapsed time for the targets with shared disease connections processing: 958 (ms)
+Elapsed time for searching for targets with shared disease connections: 976 (ms)
 Number of target-target pairs with at least 2 shared connections: 350414
 ```
 </p>
@@ -115,27 +122,32 @@ Example:
 
 ```shell
 usage: java -jar overallscore.jar -d <diseases_dir> -e <evidence_dir> -o
-       <output_dir> [-sn <number>] -t <targets_dir>
+       <output_dir> [-sn <number>] -t <targets_dir> [-ts
+       <number_top_scores>]
 
 Generate the overall association scores for given target-disease
 associations and Calculate the number of target-target pairs that share a
 connection to a specified number of diseases.
 
 Options:
- -d,--diseases <diseases_dir>   directory that contains diseases *.json
-                                files
- -e,--evidence <evidence_dir>   directory that contains evidence *.json
-                                files
- -o,--output <output_dir>       directory for the overall association
-                                scores output *.json file
- -sn,--sharednumber <number>    min number of shared diseases for
-                                target-target shared connection statistics
- -t,--targets <targets_dir>     directory that contains targets *.json
-                                files
+ -d,--diseases <diseases_dir>          directory that contains diseases
+                                       *.json files
+ -e,--evidence <evidence_dir>          directory that contains evidence
+                                       *.json files
+ -o,--output <output_dir>              directory for the overall
+                                       association scores output *.json
+                                       file
+ -sn,--sharednumber <number>           min number of shared diseases for
+                                       target-target shared connection
+                                       statistics
+ -t,--targets <targets_dir>            directory that contains targets
+                                       *.json files
+ -ts,--topscores <number_top_scores>   number of top scores for overall
+                                       statistics
 
 Example:
  java -jar overallscore.jar -e "./evidence/sourceId=eva/" -t "./targets/"
--d "./diseases/" -o "./output/" -sn 2
+-d "./diseases/" -o "./output/" -sn 2 -ts 3
 ```
 
 ---

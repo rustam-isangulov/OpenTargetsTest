@@ -12,131 +12,201 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.*;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static TargetDiseaseScore.Calculator.median;
-import static TargetDiseaseScore.cli.ProgressReporter.Action.*;
 
 public class TargetDiseaseScoreMain {
-    private final JsonIO jsonIO = new JsonIO();
-
-    private final PathMatcher fileMatcher =  FileSystems.getDefault()
-            .getPathMatcher("glob:*.json");
 
     public static void main(String... args) {
-        //
-        // understand user defined options
-        //
 
         var clp = new CommandLineParameters();
 
         try {
+            // understand user defined options
             clp.parse(args);
+
+            // ready to go
+            System.out.println();
+            System.out.println("Proceeding with the following parameters");
+            clp.printReport();
+
         } catch (ParseException ex) {
             System.out.println("Parsing of command line arguments failed: "
                     + ex.getMessage());
 
-            System.out.println();
-
             // just a bit annoying...
             // leave it for now...
+            System.out.println();
             clp.printHelp();
 
-            System.exit(1);
+            // no reasonable recovery from here...
+            return;
         }
 
-        System.out.println();
-        System.out.println("Proceeding with the following parameters");
-        System.out.println("\tEvidence path: [" + clp.getPathToEvidence() + "]");
-        System.out.println("\tTargets path: [" + clp.getPathToTargets() + "]");
-        System.out.println("\tDiseases path: [" + clp.getPathToDiseases() + "]");
-        System.out.println("\tOutput path: [" + clp.getPathToOutput() + "]");
-        System.out.println("\tMin number of shared connections: [" + clp.getMinSharedNumber() + "]");
-
-        // planning to read only json files for now...
-        PathMatcher jsonMatcher = FileSystems.getDefault()
-                .getPathMatcher("glob:*.json");
 
         //
         // run the job
         //
 
+        // main processor
         TargetDiseaseScoreMain processor = new TargetDiseaseScoreMain();
+        // json mapper
+        JsonIO jsonIO = new JsonIO();
+
+        // filter for *.json files
+        final PathMatcher jsonMatch = FileSystems.getDefault()
+                .getPathMatcher("glob:*.json");
+        // filter for json files
+        Predicate<Path> jsonFilter = path ->
+                jsonMatch.matches(path.getFileName());
+
+        // progress reporter
+        ProgressReporter pr = new ProgressReporter();
+
 
         //
         // test part 1
         //
 
-        ProgressReporter.of(EVIDENCE).start();
+        pr.mark();
 
-        // Process target-disease evidence files
-        Map<String, List<TDEvidence>> evidenceMap =
-                processor.processTDEvidence(clp.getPathToEvidence());
+        // extract evidence map and generate overall scores
 
-        // Generate overall association scores
-        List<TDComposite> overallList =
-                processor.generateOverallScores(evidenceMap);
+        var evidenceMap = processor.getMapOfGroups
+                (clp.getPathToEvidence(), jsonFilter
+                        , TDEvidence.class, e -> e.getTargetId() + e.getDiseaseId()
+                        , jsonIO );
 
-        ProgressReporter.of(EVIDENCE).finish(overallList.size());
+        // generate overall scores
+        var overallScores = processor
+                .generateOverallScores(evidenceMap, clp.getNumberOfTopScores());
 
-
-        ProgressReporter.of(TARGETS).start();
-
-        // Process targets dataset
-        Map<String, Target> targetMap =
-                processor.processTargets(clp.getPathToTargets());
-
-        ProgressReporter.of(TARGETS).finish(targetMap.size());
+        pr.report("extracting evidence map and process scores"
+                , "target-disease overall association scores", overallScores.size());
 
 
-        ProgressReporter.of(DISEASES).start();
+        // extract targets data map [TargetID] - [Target]
 
-        // Process diseases dataset
-        Map<String, Disease> diseaseMap =
-                processor.processDiseases(clp.getPathToDiseases());
+        Map<String, Target> targetMap = processor.getMapOfObjects
+                (clp.getPathToTargets(), jsonFilter
+                        , Target.class, Target::getId, jsonIO);
 
-        ProgressReporter.of(DISEASES).finish(diseaseMap.size());
+        pr.report("extracting targets"
+                , "targets", targetMap.size());
 
 
-        ProgressReporter.of(JOINT_DATASET).start();
+        // extract diseases data map [DiseaseID] - [Disease]
+
+        Map<String, Disease> diseaseMap = processor.getMapOfObjects
+                (clp.getPathToDiseases(), jsonFilter
+                        , Disease.class, Disease::getId, jsonIO);
+
+        pr.report("extracting diseases"
+                , "diseases", diseaseMap.size());
+
+
+        // create a joint table and save as *.json file
 
         List<TDAssociation> jointData =
-                processor.jointQuery(overallList, targetMap, diseaseMap);
+                processor.jointQuery(overallScores, targetMap, diseaseMap);
 
-        processor.exportJointDataSet(jointData, clp.getPathToOutput(), "joint_dataset.json");
+        Path outputFile = clp.getPathToOutput().resolve("joint_dataset.json");
+        try (var writer = Files.newBufferedWriter(outputFile)) {
+            jsonIO.ObjToJson(jointData, writer);
+        } catch(IOException ex) {
+            throw new RuntimeException("Writing json output: something bad happened with IO...", ex);
+        }
 
-        ProgressReporter.of(JOINT_DATASET).finish(jointData.size());
+        pr.report("generating joint Association/Target/Disease data set"
+                , "overall association scores", jointData.size());
 
         //
         // test part 2
         //
 
-        ProgressReporter.of(SEARCHING).start();
-
         // search for target pairs that share a min number of disease connections
-        List<TargetOverlapPair> targetOverlapPairList
-                =  processor.getTargetPairsWithSharedDiseases(overallList, clp.getMinSharedNumber());
 
-        ProgressReporter.of(SEARCHING).finish(targetOverlapPairList.size());
+        List<TargetOverlapPair> targetOverlapPairList
+                =  processor.getTargetPairsWithSharedDiseases(overallScores, clp.getMinSharedNumber());
+
+        pr.report("searching for targets with shared disease connections"
+                , "target-target pairs with at least "
+                        + clp.getMinSharedNumber() + " shared connections", targetOverlapPairList.size());
 
         System.out.println();
     }
 
-    void exportJointDataSet(List<TDAssociation> inData, Path outputDir, String filePattern) {
+    public <T> Map<String, List<T>> getMapOfGroups
+            (Path directory, Predicate<Path> jsonFilter
+                    , Class<T> type, Function<T, String> groupKeyMapper
+                    , JsonIO jsonIO) {
 
-        // for now assume single file export...
-        Path file = outputDir.resolve(filePattern);
+        // merger for the final map across multiple files
+        BinaryOperator<List<T>> merger = (o1, o2) -> {
+            o1.addAll(o2);
+            return o1;
+        };
 
-        try (var writer = Files.newBufferedWriter(file)) {
-            jsonIO.ObjToJson(inData, writer);
-        } catch(IOException ex) {
-            throw new RuntimeException("Writing json output: something bad happened with IO...", ex);
+        // traverse all matched files in the directory
+        try( var files = Files.list(directory).filter(jsonFilter)) {
+
+            // map each string to an object and collect
+            return files
+                    .parallel()
+                    .flatMap(path -> {
+                        try (var lines = Files.lines(path)) {
+                            return lines.parallel()
+                                    .map(l -> jsonIO.stringToObj(l, type))
+                                    .collect(Collectors
+                                            .groupingByConcurrent(groupKeyMapper))
+                                    . entrySet().stream();
+                        } catch (IOException ex) {
+                            throw new RuntimeException
+                                    ("Extracting objects from a json file: problem with IO: ", ex);
+                        }
+                    }).parallel()
+                    .collect(Collectors
+                            .toConcurrentMap(Map.Entry::getKey, Map.Entry::getValue, merger));
+        } catch (IOException e) {
+            throw new RuntimeException("Mapping json files to objects: something bad happened with IO: ", e);
         }
     }
 
-    List<TargetOverlapPair> getTargetPairsWithSharedDiseases
+    public <T> Map<String, T> getMapOfObjects
+            (Path directory, Predicate<Path> jsonFilter
+             , Class<T> type, Function<T, String> keyMapper, JsonIO jsonIO) {
+
+        // traverse all matched files in the directory
+        try( var files = Files.list(directory).filter(jsonFilter)) {
+
+            // map each string to an object and collect
+            return files
+                    .parallel()
+                    .flatMap(path -> {
+                        try (var lines = Files.lines(path)) {
+                            return lines.parallel()
+                                    .map(l -> jsonIO.stringToObj(l, type))
+                                    .collect(Collectors
+                                            .toConcurrentMap(keyMapper, Function.identity()))
+                                    .entrySet().stream();
+                        } catch (IOException ex) {
+                            throw new RuntimeException
+                                    ("Extracting objects from a json file: problem with IO: ", ex);
+                        }
+                    }).parallel()
+                    .collect(Collectors
+                            .toConcurrentMap(Map.Entry::getKey, Map.Entry::getValue));
+        } catch (IOException e) {
+            throw new RuntimeException("Mapping json files to objects: something bad happened with IO: ", e);
+        }
+    }
+
+    public List<TargetOverlapPair> getTargetPairsWithSharedDiseases
             (List<TDComposite> inTDCompositeAssociation,  int minOfSharedDiseases) {
 
         //
@@ -164,7 +234,7 @@ public class TargetDiseaseScoreMain {
 
         // generate a list of Search Cells for each Target
         // TargetsToCheck includes only TargetDiseaseSets that
-        // come afterwards the current target in the ordered targetDiseaseSetList
+        // come after the current target in the ordered targetDiseaseSetList
         // to avoid duplication of target-target pairs
         List<TargetDiseaseSearchCell> searchCellList = IntStream.rangeClosed(0, targetDiseaseSetList.size() - 2)
                 .mapToObj(i -> new TargetDiseaseSearchCell(
@@ -199,7 +269,7 @@ public class TargetDiseaseScoreMain {
         return targetOverlapPairList;
     }
 
-    List<TDAssociation> jointQuery
+    public List<TDAssociation> jointQuery
             (List<TDComposite> overallList
                     , Map<String, Target> targetMap
                     , Map<String, Disease> diseaseMap) {
@@ -221,84 +291,8 @@ public class TargetDiseaseScoreMain {
         return listOfAssociations;
     }
 
-    Map<String, Disease> processDiseases(Path diseasesDir) {
-
-        try(var s = Files.list(diseasesDir)
-                .filter(p -> fileMatcher.matches(p.getFileName()))) {
-
-            // collect diseases into a [DiseaseId] - [Disease] map
-            Map<String, Disease> diseases = s
-                    .flatMap(f -> {
-                        try (var lines = Files.lines(f)) {
-                            return jsonIO.LinesToObj(lines, Disease.class).stream();
-                        } catch (IOException ex) {
-                            throw new RuntimeException("Parsing json strings: Something bad happened with IO...", ex);
-                        }
-                    })
-                    .parallel()
-                    .collect(Collectors.toConcurrentMap(Disease::getId, Function.identity()));
-
-            return diseases;
-
-        } catch (IOException ex) {
-            throw new RuntimeException("Parsing disease files: something bad happened with IO...", ex);
-        }
-    }
-
-    Map<String, Target> processTargets(Path targetDir) {
-
-        try(var s = Files.list(targetDir)
-                .filter(p -> fileMatcher.matches(p.getFileName()))) {
-
-            // Collect all targets into an [TargetId] - [Target] map
-            Map<String, Target> targets = s
-                    .flatMap(f -> {
-                        try (var lines = Files.lines(f)) {
-                            return jsonIO.LinesToObj(lines, Target.class).stream();
-                        } catch (IOException ex) {
-                            throw new RuntimeException("Parsing json strings: Something bad happened with IO...", ex);
-                        }
-                    })
-                    .parallel()
-                    .collect(Collectors.toConcurrentMap(Target::getId, Function.identity()));
-
-            return targets;
-
-        } catch (IOException ex) {
-            throw new RuntimeException("Parsing target files: something bad happened with IO...", ex);
-        }
-    }
-
-    Map<String, List<TDEvidence>> processTDEvidence(Path evidenceDir) {
-
-        // load and process each *.json file in the evidenceDir
-        try (var s = Files.list(evidenceDir)
-                .filter(p -> fileMatcher.matches(p.getFileName()))) {
-
-            // parse data file and individual evidence
-            // and collect them into [Target:Disease] - [list of evidence] map
-            var map = s
-                    .flatMap(f -> {
-                        try (var lines = Files.lines(f)) {
-                            return jsonIO.LinesToObj(lines, TDEvidence.class).stream();
-                        } catch (IOException ex) {
-                            throw new RuntimeException("Parsing json strings: Something bad happened with IO...", ex);
-                        }
-                    })
-                    .parallel()
-                    .collect(Collectors.groupingByConcurrent
-                            (e -> e.getTargetId() + e.getDiseaseId()));
-
-            return map;
-
-        } catch (IOException ex) {
-            throw new RuntimeException("Parsing evidence files : something bad happened with IO...", ex);
-        }
-    }
-
-    List<TDComposite> generateOverallScores(Map<String, List<TDEvidence>> evidenceMap) {
-        // number of top scores
-        final int numberOfTopScores = 3;
+    public List<TDComposite> generateOverallScores
+            (Map<String, List<TDEvidence>> evidenceMap, int numberOfTopScores) {
 
         // process the map into a list of overall associations
         // that includes median of scores and top 3 scores

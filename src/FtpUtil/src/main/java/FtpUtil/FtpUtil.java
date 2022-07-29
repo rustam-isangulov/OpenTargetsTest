@@ -2,122 +2,126 @@ package FtpUtil;
 
 import FtpUtil.cli.CommandLineParameters;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPClient;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.function.Predicate;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class FtpUtil {
 
-    private static long totalFilesToDownload = 0;
-    private static long countDownloadedFiles = 0;
-
     public static void main(String... args) {
-        //
-        // understand user defined options
-        //
 
         var clp = new CommandLineParameters();
 
         try {
+            // understand user defined options
             clp.parse(args);
+
+            // ready to go
+            System.out.println();
+            System.out.println("Proceeding with the following parameters");
+            clp.printReport();
+
+            // prepare necessary directory structure
+            Files.createDirectories(clp.getLocalBase().resolve(clp.getDir()));
+
         } catch (ParseException ex) {
             System.out.println("Parsing of command line arguments failed: "
                     + ex.getMessage());
 
             System.out.println();
-
             // just a bit annoying...
             // leave it for now...
             clp.printHelp();
 
-            System.exit(1);
-        }
-
-
-        if (Arrays.stream(args).count() < 4) {
-            System.out.println(("Four arguments are required: server, remoteBase, localBase, dir"));
-            System.exit(0);
-        }
-
-        System.out.println();
-        System.out.println("Proceeding with the following parameters");
-        System.out.println("\tServer: [" + clp.getServer() + "]");
-        System.out.println("\tRemote: [" + clp.getRemoteBase() + "]");
-        System.out.println("\tLocal:  [" + clp.getLocalBase() + "]");
-        System.out.println("\tDir:    [" + clp.getDir() + "]");
-
-        //
-        // resolve directories
-        //
-        Path remotePath = clp.getRemoteBase().resolve(clp.getDir());
-        Path localPath = clp.getLocalBase().resolve(clp.getDir());
-
-        //
-        // ensure we have the local dir structure in place
-        //
-
-        try {
-            Files.createDirectories(localPath);
+            // no reasonable recovery from here...
+            return;
         } catch (IOException ex) {
             System.out.format("Unable to create local directory: [%s] reason: [%s]"
-                    , localPath.toString(), ex.getMessage());
+                    , clp.getLocalBase().resolve(clp.getDir()), ex.getMessage());
             System.out.println();
-            System.exit(0);
+
+            // no reasonable recovery from here...
+            return;
         }
+
+        //
+        // create a new runner with all required info
+        //
+        FtpUtil utilityRunner = new FtpUtil
+                (clp.getServer()
+                        , clp.getRemoteBase()
+                        , clp.getDir()
+                        , clp.getLocalBase());
 
         //
         // run the job
         //
-        ConnectAndDownload(clp.getServer(), remotePath, localPath);
+        utilityRunner.ConnectAndDownload();
     }
 
-    public static void ConnectAndDownload
-            (URI server, Path remoteDir, Path localDir) {
+    private final URI server;
+    private final Path fullRemotePath;
+    private final Path fullLocalPath;
+
+    public FtpUtil(URI server, Path remoteBase, Path dataDir, Path localBase) {
+        this.server = server;
+
+        fullRemotePath = remoteBase.resolve(dataDir);
+        fullLocalPath = localBase.resolve(dataDir);
+    }
+
+    public void ConnectAndDownload () {
+        // divider from previous outputs
+        System.out.println();
+
+        // prepare to measure elapsed time
+        long startTime = System.nanoTime();
 
         // download files from FTP server
-        try(var client = FtpClient.of(server.toString())) {
-            var files = client.listFiles(remoteDir);
+        try(var client = FtpClient.getClient(server.toString(), new FTPClient())) {
 
-            // have the same predicate for counting and downloading
-            Predicate<FTPFile> fileFilter = FTPFile::isFile;
+            // provide output to copy a remote file content
+            Function<Path, OutputStream> outputProvider =
+                    file -> {
+                        try {
+                            return new BufferedOutputStream(
+                                    new FileOutputStream
+                                            (fullLocalPath.resolve(file).toFile()));
+                        } catch (FileNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    };
 
-            //  find total number of files to download
-            totalFilesToDownload = files.stream()
-                    .filter(fileFilter)
-                    .count();
+            // react to FtpClient updates
+            Consumer<String> downloadProgressEvent = System.out::println;
 
-            // prepare to measure elapsed time
-            long startTime = System.nanoTime();
-
-            // divider from previous outputs
-            System.out.println();
-
-            // go through the file list and download each one
-            files.stream()
-                    .filter(fileFilter)
-                    .forEach(f -> {
-                        System.out.format("Downloading (%d of %d):[%s]"
-                                , ++countDownloadedFiles, files.size(), f.getName());
-                        System.out.println();
-
-                        client.downloadFile(remoteDir, Path.of(f.getName()), localDir);
-                    });
-
-            // report elapsed time
-            long elapsedTime = System.nanoTime() - startTime;
-
-            System.out.println();
-            System.out.format("elapsed time: %.0f (ms)",elapsedTime * 1e-6);
-            System.out.println();
+            // download all files form the remoteDir
+            client.downloadAllFiles(fullRemotePath, outputProvider, downloadProgressEvent);
 
         } catch (IOException ex) {
             System.out.println("Communication with FTP server failed...");
             ex.printStackTrace();
+            return;
         }
+
+        // report elapsed time
+        long elapsedTime = System.nanoTime() - startTime;
+
+        System.out.println();
+        System.out.format("elapsed time: %.0f (ms)",elapsedTime * 1e-6);
+        System.out.println();
+    }
+
+    public Path getFullRemotePath() {
+        return fullRemotePath;
+    }
+
+    public Path getFullLocalPath() {
+        return fullLocalPath;
     }
 }
